@@ -84,10 +84,10 @@ export default function HomePage() {
             <div className="relative w-full sm:max-w-sm"><Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"/><input value={moduleSearch} onChange={(event) => setModuleSearch(event.target.value)} type="search" aria-label="Rechercher une application" placeholder="Rechercher une application…" className="h-11 w-full rounded-xl border border-[#e0e8f3] bg-white pl-10 pr-4 text-xs outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"/></div>
           </div>
           <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-            <button type="button" onClick={() => setActiveGroup('all')} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === 'all' ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>Toutes</button>
-            {moduleGroups.map((group) => <button key={group.id} type="button" onClick={() => setActiveGroup(group.id)} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === group.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>{group.title}</button>)}
+            <button type="button" onClick={() => setActiveGroup('all')} aria-pressed={activeGroup === 'all'} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === 'all' ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>Toutes</button>
+            {moduleGroups.map((group) => <button key={group.id} type="button" onClick={() => setActiveGroup(group.id)} aria-pressed={activeGroup === group.id} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === group.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>{group.title}</button>)}
           </div>
-          <div className="mb-3 mt-2 text-[10px] font-semibold text-slate-400">{visibleModules.length} application{visibleModules.length === 1 ? '' : 's'} affichée{visibleModules.length === 1 ? '' : 's'}</div>
+          <div role="status" aria-live="polite" className="mb-3 mt-2 text-[10px] font-semibold text-slate-400">{visibleModules.length} application{visibleModules.length === 1 ? '' : 's'} affichée{visibleModules.length === 1 ? '' : 's'}</div>
           <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibleModules.map((module) => {
               const ModuleIcon = module.icon;
