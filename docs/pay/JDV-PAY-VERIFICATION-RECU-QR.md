@@ -1,6 +1,6 @@
 # JDV PAY — Vérification indépendante des reçus par QR code
 
-**Statut :** spécification technique à valider avant toute modification de Supabase  
+**Statut :** schéma appliqué dans Supabase ; routes serveur ajoutées dans la branche de travail ; activation QR côté interface encore en attente  
 **Périmètre :** reçus de transactions JDV PAY uniquement  
 **Environnement :** branche de travail `design/jdv-global-center-visual-map-v1`
 
@@ -99,14 +99,23 @@ Il prévoit :
 - aucune lecture directe de la table par les rôles anon/authenticated ;
 - une fonction de vérification réservée à `service_role`, afin d'obliger le passage par un endpoint serveur protégé contre les abus.
 
-**Cette migration est un fichier de code en attente de revue, pas une modification appliquée à la base.** La fonction de vérification n'est volontairement pas exposée au public. L'application ne doit pas afficher de QR actif tant qu'un endpoint serveur à limitation de débit, un client Supabase administratif strictement serveur et les tests correspondants ne sont pas disponibles.
+**Mise à jour du 1er novembre 2026 :** la migration a été appliquée au projet Supabase. L'historique de base enregistre `20261101203458_jdv_pay_receipt_verification_tokens`. La table existe, RLS est actif, les deux fonctions sont créées ; les privilèges ont été contrôlés : `anon` et `authenticated` ne peuvent pas appeler directement la fonction de vérification, tandis que `service_role` le peut.
+
+Les routes suivantes ont été ajoutées dans la branche `design/jdv-global-center-visual-map-v1` :
+- `POST /api/pay/receipts/:transactionId/verification-token` : session utilisateur, vérification d'identité et appel de la RPC d'émission.
+- `GET /api/pay/verify/:token` : vérification côté serveur avec client administratif privé ; réponses publiques minimales et sans cache.
+- `src/lib/supabase/admin.ts` : client administratif marqué `server-only`.
+
+La variable `SUPABASE_SERVICE_ROLE_KEY` (ou `SUPABASE_SECRET_KEY`) doit être configurée dans l'environnement d'hébergement comme secret serveur, jamais avec le préfixe `NEXT_PUBLIC_`. Un exemple est fourni dans `docs/pay/JDV-PAY-VERIFICATION-ENV.example`.
+
+**Limites restantes :** aucune limitation de débit distribuée n'a encore été branchée sur la route publique ; aucun test/build n'a été exécuté ; le QR n'est pas encore intégré à l'interface du reçu. En conséquence, ne pas annoncer l'activation publique en production tant que ces contrôles ne sont pas terminés.
 
 ### Conditions bloquantes avant activation
 
-1. Confirmer que l'extension `pgcrypto` est disponible dans le projet et que son schéma est bien `extensions`.
-2. Vérifier les droits effectifs des rôles Supabase et l'accès aux fonctions SECURITY DEFINER.
-3. Ajouter un client administratif serveur uniquement si une variable secrète privée existe ; ne jamais utiliser de clé `NEXT_PUBLIC_*`.
-4. Implémenter les endpoints POST émission/renouvellement et GET vérification avec limitation de débit, réponses uniformes en cas de jeton inconnu, et journaux sans jeton brut.
-5. Ajouter les tests d'accès inter-comptes, jeton expiré/révoqué, transaction remboursée/annulée, statut modifié après émission et tentatives répétées.
+1. Configurer le secret administratif côté hébergement, uniquement dans les variables serveur.
+2. Ajouter une limitation de débit distribuée pour l'endpoint public de vérification.
+3. Ajouter l'action QR dans le reçu privé, avec renouvellement et révocation.
+4. Exécuter les vérifications TypeScript, lint, build et tests d'accès inter-comptes.
+5. Tester expiration/révocation, remboursement/annulation, statut modifié après émission et tentatives répétées.
 
-Aucun déploiement, aucune migration exécutée et aucun changement de production n'ont été effectués.
+Aucun déploiement de production n'a été effectué. La migration SQL a bien été appliquée au projet Supabase connecté.
