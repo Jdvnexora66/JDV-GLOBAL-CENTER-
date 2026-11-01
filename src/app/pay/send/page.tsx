@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -15,6 +15,7 @@ type Ben = { id: string; name: string; email: string | null; phone: string | nul
 export default function SendPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const sb = useMemo(() => createClient(), []);
   const { wallets, refresh } = usePayWallets();
   const [bens, setBens] = useState<Ben[]>([]);
@@ -26,11 +27,16 @@ export default function SendPage() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [step, setStep] = useState<'form' | 'confirm' | 'done'>('form');
   const [busy, setBusy] = useState(false);
+  const [recipientChecked, setRecipientChecked] = useState(false);
   const [done, setDone] = useState<{ ref: string; amount: number; fee: number; code: string; to: string } | null>(null);
   const attemptKey = useRef(newKey());
 
   useEffect(() => { if (!loading && !user) router.push('/auth/login?redirect=/pay/send'); }, [loading, user, router]);
   useEffect(() => { sb.from('pay_beneficiaries').select('id,name,email,phone').eq('is_active', true).order('name').then(({ data }) => setBens((data ?? []) as Ben[])); }, [sb]);
+  useEffect(() => {
+    const requestedId = searchParams.get('beneficiary');
+    if (requestedId) setBenId(requestedId);
+  }, [searchParams]);
   useEffect(() => { if (wallets && !walletId) setWalletId((wallets.find((w) => w.currencies.code === 'XOF' && w.wallet_status === 'active') ?? wallets.find((w) => w.wallet_status === 'active'))?.id ?? ''); }, [wallets, walletId]);
 
   // Le bénéficiaire est-il un utilisateur JDV ?
@@ -53,7 +59,7 @@ export default function SendPage() {
   const canContinue = !!wallet && !!ben && member === true && n > 0 && !!quote && quote.sufficient && quote.within_limits;
 
   async function submit() {
-    if (!user || !wallet || !ben) return;
+    if (!user || !wallet || !ben || !recipientChecked) return;
     setBusy(true);
     const { data, error } = await sb.from('transfers').insert({
       sender_user_id: user.id, sender_wallet_id: wallet.id, beneficiary_id: ben.id, transfer_type: 'national', send_amount: n,
@@ -85,12 +91,13 @@ export default function SendPage() {
         {!wallets ? <p className="text-sm text-muted-foreground">Chargement…</p> : <WalletPicker wallets={wallets} value={walletId} onChange={setWalletId} label="Depuis le portefeuille" />}
 
         <label className="block text-sm"><span className="text-foreground">Destinataire</span>
-          <select value={benId} onChange={(e) => setBenId(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground">
+          <select value={benId} onChange={(e) => { setBenId(e.target.value); setRecipientChecked(false); }} className="mt-1 w-full rounded-lg border border-border bg-card px-3 py-2 text-foreground">
             <option value="">Choisir un bénéficiaire…</option>
             {bens.map((b) => <option key={b.id} value={b.id}>{b.name}{b.email ? ` · ${b.email}` : b.phone ? ` · ${b.phone}` : ''}</option>)}
           </select>
         </label>
         {bens.length === 0 && <p className="text-xs text-muted-foreground">Aucun bénéficiaire. <Link href="/pay/beneficiaries" className="font-medium text-accent underline">Ajoutez-en un</Link> avec l’email ou le téléphone confirmé de la personne.</p>}
+        {ben && member === true && <div className="rounded-lg border border-border bg-muted/40 p-3 text-sm"><p className="font-semibold text-foreground">Destinataire sélectionné</p><p className="mt-1 text-foreground">{ben.name}</p><p className="text-xs text-muted-foreground">{ben.phone || ben.email || 'Coordonnée non renseignée'}</p><p className="mt-2 text-xs text-muted-foreground">Le nom affiché provient de votre bénéficiaire enregistré. Vérifiez qu’il correspond bien à la personne à qui vous souhaitez envoyer l’argent.</p></div>}
         {ben && member === false && <p role="alert" className="rounded-lg bg-warning/10 p-3 text-xs text-warning">Ce bénéficiaire n’a pas de compte JDV avec un email ou un téléphone confirmé. Les envois vers un destinataire sans compte JDV ne sont pas encore disponibles : invitez-le à s’inscrire, ou vérifiez ses coordonnées.</p>}
 
         <label className="block text-sm"><span className="text-foreground">Montant{wallet ? ` (${wallet.currencies.code})` : ''}</span>
@@ -114,9 +121,10 @@ export default function SendPage() {
           <button type="button" disabled={!canContinue} onClick={() => setStep('confirm')} className="btn-primary w-full px-4 py-2.5 disabled:opacity-50">Continuer</button>
         ) : (
           <div className="rounded-lg border border-accent/40 p-3 text-sm">
-            <p className="font-semibold text-foreground">Confirmer l’envoi de {quote && money(quote.amount, quote.currency)} à {ben?.name} ?</p>
-            <p className="text-xs text-muted-foreground">Total débité : {quote && money(quote.total, quote.currency)}. Un envoi confirmé ne peut pas être annulé.</p>
-            <div className="mt-3 flex gap-2"><button type="button" onClick={submit} disabled={busy} className="btn-primary flex-1 px-4 py-2 disabled:opacity-60">{busy ? 'Envoi…' : 'Confirmer et envoyer'}</button><button type="button" onClick={() => setStep('form')} disabled={busy} className="btn-ghost px-4 py-2">Modifier</button></div>
+            <p className="font-semibold text-foreground">Vérification finale du destinataire</p>
+            <dl className="mt-2 space-y-1 rounded-lg bg-muted p-3"><div className="flex justify-between gap-3"><dt className="text-muted-foreground">Nom</dt><dd className="text-right font-semibold text-foreground">{ben?.name}</dd></div><div className="flex justify-between gap-3"><dt className="text-muted-foreground">Coordonnée</dt><dd className="text-right text-foreground">{ben?.phone || ben?.email || 'Non renseignée'}</dd></div><div className="flex justify-between gap-3"><dt className="text-muted-foreground">Montant</dt><dd className="text-right text-foreground">{quote && money(quote.amount, quote.currency)}</dd></div><div className="flex justify-between gap-3"><dt className="text-muted-foreground">Frais</dt><dd className="text-right text-foreground">{quote && money(quote.fee, quote.currency)}</dd></div><div className="flex justify-between gap-3 border-t border-border pt-1 font-bold"><dt>Total débité</dt><dd>{quote && money(quote.total, quote.currency)}</dd></div></dl>
+            <label className="mt-3 flex items-start gap-2 text-xs text-foreground"><input type="checkbox" checked={recipientChecked} onChange={(e) => setRecipientChecked(e.target.checked)} className="mt-0.5" /><span>Je confirme avoir vérifié le nom et les coordonnées du destinataire. Je comprends qu’un transfert confirmé ne peut pas être annulé.</span></label>
+            <div className="mt-3 flex gap-2"><button type="button" onClick={submit} disabled={busy || !recipientChecked} className="btn-primary flex-1 px-4 py-2 disabled:opacity-60">{busy ? 'Envoi…' : 'Confirmer et envoyer'}</button><button type="button" onClick={() => setStep('form')} disabled={busy} className="btn-ghost px-4 py-2">Modifier</button></div>
           </div>
         )}
       </div>
