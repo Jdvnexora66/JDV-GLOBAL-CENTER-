@@ -268,23 +268,23 @@ export default function BeneficiariesPage() {
                       {TYPE_LABELS[b.beneficiary_type] || b.beneficiary_type}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5">
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
                     {b.phone && <span className="text-xs text-muted-foreground flex items-center gap-1"><Phone size={10} />{b.phone}</span>}
                     {b.email && <span className="text-xs text-muted-foreground flex items-center gap-1"><Mail size={10} />{b.email}</span>}
                     {b.countries && <span className="text-xs text-muted-foreground">{b.countries.flag_emoji} {b.countries.name}</span>}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex w-full items-center gap-2 sm:w-auto sm:flex-shrink-0">
                   <Link
                     href={`/pay/send?beneficiary=${b.id}`}
-                    className="btn-primary text-xs px-2.5 py-1.5"
+                    className="btn-primary min-h-10 flex-1 px-3 py-2 text-xs sm:flex-none"
                   >
                     Envoyer
                   </Link>
-                  <button onClick={() => handleEdit(b)} className="btn-ghost p-1.5">
+                  <button type="button" aria-label={`Modifier ${b.name}`} onClick={() => handleEdit(b)} className="btn-ghost min-h-10 min-w-10 p-2">
                     <Edit2 size={14} />
                   </button>
-                  <button onClick={() => handleDelete(b.id)} className="btn-ghost p-1.5 text-danger hover:bg-danger/10">
+                  <button type="button" aria-label={`Supprimer ${b.name}`} onClick={() => handleDelete(b.id)} className="btn-ghost min-h-10 min-w-10 p-2 text-danger hover:bg-danger/10">
                     <Trash2 size={14} />
                   </button>
                 </div>
