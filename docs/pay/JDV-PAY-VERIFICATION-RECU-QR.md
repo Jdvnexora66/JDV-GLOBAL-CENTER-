@@ -69,14 +69,18 @@ Les noms et contrats définitifs doivent être confirmés avant développement. 
 - Sur la page publique : identité visuelle JDV PAY, état « Reçu vérifié » ou « Reçu non vérifiable », référence publique, date, type, montant/devise selon politique validée, et mention précisant qu'il s'agit d'une vérification d'enregistrement et non d'une garantie de règlement bancaire externe.
 - Aucun détail privé du compte ou des parties à la transaction.
 
-## 8. Décisions à valider avant l'implémentation
+## 8. Décisions confirmées
 
-1. Durée de validité par défaut du QR : proposition 90 jours.
-2. Le QR doit-il être renouvelable après expiration ? Proposition : oui, par le propriétaire connecté.
-3. En cas de remboursement ou d'annulation ultérieure : proposition de marquer le reçu « non valide / opération annulée ou remboursée », sans effacer l'historique.
-4. Affichage public du montant et de la devise : proposition oui, sans nom des parties ; à confirmer.
-5. Choix d'implémentation : route serveur Next.js avec secret serveur protégé, ou Edge Function Supabase dédiée.
+Les choix suivants ont été confirmés par le concepteur pour guider l'implémentation :
+
+1. Durée de validité par défaut du QR : **90 jours**.
+2. Renouvellement après expiration : **oui, par le propriétaire connecté**, après un nouveau contrôle d'accès et de statut.
+3. Remboursement ou annulation ultérieure : le reçu devient **non valide / opération remboursée ou annulée** ; l'historique n'est pas effacé.
+4. Informations publiques : **référence publique, date, montant, devise et statut**, sans nom des parties, e-mail, téléphone, identifiant utilisateur ou portefeuille.
+5. Architecture retenue pour la suite : **route serveur Next.js**, à condition de disposer d'un secret serveur exclusivement privé ; aucune clé service-role dans le navigateur.
 
 ## 9. État de réalisation
 
-Cette spécification ne modifie pas la base de données et ne crée pas encore de QR de vérification. Le QR de paiement existant reste inchangé. L'implémentation réelle nécessite une migration, les politiques d'accès, les endpoints serveur et des tests de sécurité. Aucun changement Supabase ou production n'est autorisé par ce document.
+La spécification et les décisions sont enregistrées. La génération effective du QR reste désactivée tant que la migration, les contrôles RLS/droits, les endpoints serveur et les tests de sécurité ne sont pas prêts. Le QR de demande de paiement existant reste inchangé.
+
+**Limite de cette étape :** l'environnement de travail connecté à GitHub ne fournit pas le Supabase CLI permettant de créer proprement une migration avec `supabase migration new`, ni un environnement local pour exécuter les tests. Aucun SQL n'a été appliqué à Supabase, aucune route incomplète n'a été publiée et aucune mise en production n'a été effectuée.
