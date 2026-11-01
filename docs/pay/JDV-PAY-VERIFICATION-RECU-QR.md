@@ -1,0 +1,82 @@
+# JDV PAY — Vérification indépendante des reçus par QR code
+
+**Statut :** spécification technique à valider avant toute modification de Supabase  
+**Périmètre :** reçus de transactions JDV PAY uniquement  
+**Environnement :** branche de travail `design/jdv-global-center-visual-map-v1`
+
+## 1. Objectif
+
+Permettre à un commerçant, un bénéficiaire ou un contrôleur de scanner un QR code et de vérifier qu'un reçu correspond à une transaction enregistrée et confirmée par JDV PAY.
+
+Le QR ne doit jamais contenir un identifiant utilisateur, un numéro de téléphone, une adresse e-mail, un numéro de compte, une donnée KYC, une donnée de carte, ni les détails complets de la transaction.
+
+## 2. Ce qui existe déjà
+
+- `wallet_transactions` possède notamment un identifiant, une référence, un statut, un montant, des frais, une date et un portefeuille.
+- Les reçus privés de l'application lisent les transactions à travers la session de l'utilisateur.
+- Les demandes de paiement ont leur propre QR de partage. Ce QR est un lien de paiement et ne doit pas être confondu avec un QR de vérification de reçu.
+
+La référence de transaction et l'UUID ne doivent pas devenir des secrets d'accès public.
+
+## 3. Flux proposé
+
+1. L'utilisateur connecté ouvre un reçu lié à une transaction qu'il est autorisé à consulter.
+2. Le serveur vérifie que la transaction existe et que son statut est exactement `completed`.
+3. Le serveur génère un jeton aléatoire cryptographiquement sûr d'au moins 256 bits.
+4. Seul le hash du jeton est conservé en base ; le jeton brut est remis une seule fois au serveur applicatif pour composer l'URL du QR.
+5. Le QR encode une URL HTTPS de vérification avec ce jeton opaque. Il ne contient aucune donnée personnelle ou financière lisible.
+6. Lors du scan, un endpoint public valide le jeton, contrôle la révocation et relit le statut actuel de la transaction.
+7. La page publique renvoie uniquement un résultat minimal : valide/invalide, référence publique, date, type et montant/devise si la politique de confidentialité l'autorise. Elle n'affiche jamais le nom complet, l'e-mail, le téléphone, le portefeuille, l'identifiant utilisateur ou le solde.
+8. Le propriétaire peut révoquer le jeton. Une révocation rend immédiatement le QR invalide.
+
+## 4. Modèle de données proposé
+
+Nouvelle table privée, par exemple `pay_receipt_verification_tokens` :
+
+- `id` : UUID technique.
+- `transaction_id` : FK vers `wallet_transactions(id)`.
+- `owner_user_id` : FK vers `auth.users(id)`, utilisée pour vérifier le droit de révocation.
+- `token_hash` : hash SHA-256 unique du jeton aléatoire ; jamais le jeton brut.
+- `expires_at` : date d'expiration obligatoire.
+- `revoked_at` : date de révocation, nullable.
+- `created_at` : date d'émission.
+
+La table doit être inaccessible aux rôles `anon` et `authenticated` via le Data API. Les opérations d'émission, de vérification et de révocation passent par un service serveur contrôlé. Si une fonction SQL privilégiée est retenue, son schéma, son propriétaire, ses droits EXECUTE, son `search_path` et ses contrôles `auth.uid()` doivent être audités avant déploiement.
+
+## 5. Contrôles obligatoires
+
+- Émettre un jeton uniquement pour une transaction `completed`.
+- Vérifier côté serveur l'appartenance du reçu à l'utilisateur lors de l'émission et de la révocation.
+- Ne jamais accepter un statut ou un montant envoyé par le navigateur comme preuve.
+- Recontrôler le statut courant à chaque vérification publique ; un remboursement, une annulation ou une rétrofacturation doit empêcher l'affichage « valide » selon les règles métier retenues.
+- Stocker le hash, pas le jeton brut.
+- Utiliser HTTPS, expiration, révocation, limitation de débit et journalisation sans jeton brut.
+- Réponses publiques minimales, messages d'erreur non révélateurs et protections contre l'énumération.
+- Ne jamais exposer la clé Supabase service-role dans le navigateur ni dans une variable `NEXT_PUBLIC_*`.
+- Ajouter des tests d'accès inter-comptes, jeton expiré, jeton révoqué, transaction non terminée, transaction remboursée, brute-force et statut modifié après émission.
+
+## 6. Endpoints envisagés
+
+- `POST /api/pay/receipts/:transactionId/verification-token` — session authentifiée ; émet ou renouvelle un jeton après contrôle d'appartenance et de statut.
+- `GET /api/pay/verify/:token` — public ; valide le jeton et retourne seulement les informations publiques minimales.
+- `DELETE /api/pay/receipts/:transactionId/verification-token` — session authentifiée ; révoque le jeton du propriétaire.
+
+Les noms et contrats définitifs doivent être confirmés avant développement. Aucun endpoint de vérification publique ne doit effectuer une lecture libre de `wallet_transactions` par UUID ou référence.
+
+## 7. Interface prévue
+
+- Dans le reçu privé : bouton « Générer / renouveler le QR de vérification », QR, URL de vérification, date d'expiration et action « Révoquer ».
+- Sur la page publique : identité visuelle JDV PAY, état « Reçu vérifié » ou « Reçu non vérifiable », référence publique, date, type, montant/devise selon politique validée, et mention précisant qu'il s'agit d'une vérification d'enregistrement et non d'une garantie de règlement bancaire externe.
+- Aucun détail privé du compte ou des parties à la transaction.
+
+## 8. Décisions à valider avant l'implémentation
+
+1. Durée de validité par défaut du QR : proposition 90 jours.
+2. Le QR doit-il être renouvelable après expiration ? Proposition : oui, par le propriétaire connecté.
+3. En cas de remboursement ou d'annulation ultérieure : proposition de marquer le reçu « non valide / opération annulée ou remboursée », sans effacer l'historique.
+4. Affichage public du montant et de la devise : proposition oui, sans nom des parties ; à confirmer.
+5. Choix d'implémentation : route serveur Next.js avec secret serveur protégé, ou Edge Function Supabase dédiée.
+
+## 9. État de réalisation
+
+Cette spécification ne modifie pas la base de données et ne crée pas encore de QR de vérification. Le QR de paiement existant reste inchangé. L'implémentation réelle nécessite une migration, les politiques d'accès, les endpoints serveur et des tests de sécurité. Aucun changement Supabase ou production n'est autorisé par ce document.
