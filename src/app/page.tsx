@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
-  ArrowRight, Search, Globe2, LayoutGrid, ShieldCheck, Sparkles,
-  CreditCard, Building2, HeartHandshake,
+  ArrowRight, Search, Globe2, LayoutGrid, ShieldCheck, Building2, HeartHandshake,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/ui/AppLogo';
