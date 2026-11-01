@@ -118,3 +118,13 @@ Le dashboard et quelques problèmes de présentation mobile sont traités sur la
 - Type-check, lint, build, tests RLS et tests de parcours restent à exécuter dans un environnement autorisé.
 
 Aucune modification Supabase, aucun déploiement, aucune fusion vers la branche principale et aucune opération financière réelle n'ont été effectués.
+
+## Reçus JDV PAY — ajout du 1er novembre 2026
+
+- Ajout d'une page de reçu authentifiée à `/pay/receipt/[id]`, alimentée par la ligne de transaction existante dans `wallet_transactions`.
+- L'historique expose un lien « Reçu » uniquement pour les opérations au statut `completed`.
+- Le reçu affiche la référence, la date, le type, le montant, les frais et la description disponible. Il propose l'impression ou l'enregistrement PDF via la fonction d'impression du navigateur ; aucune dépendance PDF supplémentaire n'a été ajoutée.
+- L'accès à une transaction non visible par les règles d'accès du compte renvoie un état indisponible. Les opérations non terminées portent un avertissement explicite et ne sont pas présentées comme une preuve de paiement.
+- Limite connue : aucun QR de vérification publique n'a été créé. Il faut d'abord une émission de jeton opaque côté serveur, révocable, puis un endpoint public de vérification à divulgation minimale. Le reçu actuel est un récapitulatif privé imprimable, pas une attestation indépendante.
+- Aucun schéma, RPC, politique RLS, fournisseur de paiement, secret, branche principale ou environnement de production n'a été modifié.
+- Contrôles non exécutés : build, TypeScript, lint, tests d'accès multi-utilisateurs, impression réelle et vérification sur mobile. Ils restent à effectuer avant toute mise en production.
