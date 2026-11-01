@@ -45,7 +45,7 @@ export default function HomePage() {
         <section id="univers-jdv" className="scroll-mt-24 pt-10">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-blue-600">Explorez l'écosystème</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-[28px]">Les 9 univers JDV</h2><p className="mt-1 text-xs text-slate-500">Chaque univers rassemble des applications métier complémentaires.</p></div>
-            <Link href="/branches" className="inline-flex items-center gap-1 text-xs font-extrabold text-blue-600 hover:text-blue-800">Voir les univers <ArrowRight size={15}/></Link>
+            <Link href="/branches" className="inline-flex items-center gap-1 text-xs font-extrabold text-blue-600 hover:text-blue-800">Voir les branches historiques <ArrowRight size={15}/></Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {moduleGroups.map((group, index) => {
@@ -73,7 +73,7 @@ export default function HomePage() {
 
         <footer className="mt-12 flex flex-col gap-4 border-t border-[#e1e8f2] pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="inline-flex items-center gap-2"><AppLogo size={32}/><span><strong className="block text-sm text-[#172b4d]">JDV GLOBAL CENTER</strong><span className="text-[10px]">Votre monde connecté</span></span></Link>
-          <div className="flex flex-wrap gap-x-5 gap-y-2"><Link href="/about" className="hover:text-blue-600">À propos</Link><Link href="/branches" className="hover:text-blue-600">Nos univers</Link><Link href="/help" className="hover:text-blue-600">Centre d'aide</Link><Link href="/auth/login" className="hover:text-blue-600">Connexion</Link></div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2"><Link href="/about" className="hover:text-blue-600">À propos</Link><Link href="/branches" className="hover:text-blue-600">Branches historiques</Link><Link href="/help" className="hover:text-blue-600">Centre d'aide</Link><Link href="/auth/login" className="hover:text-blue-600">Connexion</Link></div>
           <span>© {new Date().getFullYear()} JDV GLOBAL CENTER</span>
         </footer>
       </div>
