@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+
 import {
-  ArrowRight, Search, Globe2, LayoutGrid, ShieldCheck, Building2, HeartHandshake, LockKeyhole,
+  ArrowRight, Globe2, LayoutGrid, ShieldCheck, Building2, HeartHandshake,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/ui/AppLogo';
@@ -12,19 +12,7 @@ import { getGroupedJDVModules } from '@/lib/jdv/application-registry';
 
 export default function HomePage() {
   const { user, isSuperAdmin } = useAuth();
-  const [moduleSearch, setModuleSearch] = useState('');
-  const [activeGroup, setActiveGroup] = useState('all');
-  const moduleGroups = useMemo(() => getGroupedJDVModules(), []);
-  const allModules = useMemo(() => moduleGroups.flatMap((group) => group.modules), [moduleGroups]);
-  const visibleModules = useMemo(() => {
-    const query = moduleSearch.trim().toLocaleLowerCase('fr');
-    return allModules.filter((module) => {
-      const group = moduleGroups.find((item) => item.modules.some((entry) => entry.id === module.id));
-      const matchesGroup = activeGroup === 'all' || group?.id === activeGroup;
-      const matchesSearch = !query || `${module.name} ${module.description} ${group?.title ?? ''}`.toLocaleLowerCase('fr').includes(query);
-      return matchesGroup && matchesSearch;
-    });
-  }, [activeGroup, allModules, moduleGroups, moduleSearch]);
+  const moduleGroups = getGroupedJDVModules();
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f4f7fc] text-[#172b4d]">
@@ -38,7 +26,7 @@ export default function HomePage() {
             <h1 className="mt-5 max-w-3xl text-[2.55rem] font-black leading-[1.04] tracking-[-.045em] sm:text-5xl lg:text-[3.6rem]">Un seul portail.<br/><span className="text-blue-100">Tout un monde de possibilités.</span></h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-blue-50 sm:text-base">Découvrez les services de JDV GLOBAL CENTER : finance, entreprise, immobilier, mobilité, santé, communauté, médias, formation, agriculture et énergie.</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <a href="#catalogue-jdv" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-extrabold text-[#1455a8] shadow-lg transition hover:-translate-y-0.5">Explorer les applications <ArrowRight size={16}/></a>
+              <a href="#univers-jdv" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-xs font-extrabold text-[#1455a8] shadow-lg transition hover:-translate-y-0.5">Explorer les univers <ArrowRight size={16}/></a>
               <Link href={user ? '/dashboard' : '/auth/register'} className="inline-flex items-center gap-2 rounded-xl border border-white/35 bg-white/10 px-5 py-3 text-xs font-extrabold text-white transition hover:bg-white/20">{user ? 'Ouvrir mon espace' : 'Créer mon compte'}</Link>
             </div>
           </div>
@@ -49,9 +37,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section aria-label="Aperçu de l'écosystème" className="relative z-[1] -mt-1 grid grid-cols-3 gap-2 pt-4 sm:gap-4">
+        <section aria-label="Aperçu de l'écosystème" className="relative z-[1] -mt-1 grid grid-cols-2 gap-2 pt-4 sm:gap-4">
           <div className="flex items-center gap-2 rounded-2xl border border-[#e4ebf5] bg-white p-3 shadow-sm sm:gap-3 sm:p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600"><LayoutGrid size={18}/></span><span><strong className="block text-lg font-black leading-tight">{moduleGroups.length}</strong><span className="text-[9px] font-semibold text-slate-500 sm:text-[11px]">Univers</span></span></div>
-          <div className="flex items-center gap-2 rounded-2xl border border-[#e4ebf5] bg-white p-3 shadow-sm sm:gap-3 sm:p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600"><Globe2 size={18}/></span><span><strong className="block text-lg font-black leading-tight">{allModules.length}</strong><span className="text-[9px] font-semibold text-slate-500 sm:text-[11px]">Applications référencées</span></span></div>
           <div className="flex items-center gap-2 rounded-2xl border border-[#e4ebf5] bg-white p-3 shadow-sm sm:gap-3 sm:p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600"><ShieldCheck size={18}/></span><span><strong className="block text-lg font-black leading-tight">JDV CORE</strong><span className="text-[9px] font-semibold text-slate-500 sm:text-[11px]">Socle commun</span></span></div>
         </section>
 
@@ -71,33 +58,9 @@ export default function HomePage() {
                 <p className="mt-4 text-[9px] font-black uppercase tracking-[.18em] text-blue-600">UNIVERS {String(index+1).padStart(2,'0')}</p>
                 <h3 className="mt-1 text-base font-extrabold text-[#172b4d]">{group.title}</h3>
                 <p className="mt-2 min-h-10 text-xs leading-5 text-slate-500">{group.description}</p>
-                <div className="mt-4 flex flex-wrap gap-1.5">{group.modules.slice(0,3).map((module) => <span key={module.id} className="rounded-lg bg-[#f4f7fc] px-2 py-1 text-[9px] font-bold text-slate-600">{module.name}</span>)}{group.modules.length > 3 && <span className="rounded-lg bg-blue-50 px-2 py-1 text-[9px] font-extrabold text-blue-600">+{group.modules.length-3}</span>}</div>
                 <span className="mt-4 inline-flex items-center gap-2 text-[11px] font-extrabold text-blue-600">Découvrir cet univers <ArrowRight size={14} className="transition group-hover:translate-x-1"/></span>
               </Link>;
             })}
-          </div>
-        </section>
-
-        <section id="catalogue-jdv" className="scroll-mt-24 pt-12">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-blue-600">Accès direct</p><h2 className="mt-1 text-2xl font-black tracking-tight sm:text-[28px]">Catalogue des applications</h2><p className="mt-1 text-xs text-slate-500">Retrouvez rapidement un service par son nom ou son domaine.</p></div>
-            <div className="relative w-full sm:max-w-sm"><Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"/><input value={moduleSearch} onChange={(event) => setModuleSearch(event.target.value)} type="search" aria-label="Rechercher une application" placeholder="Rechercher une application…" className="h-11 w-full rounded-xl border border-[#e0e8f3] bg-white pl-10 pr-4 text-xs outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"/></div>
-          </div>
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-            <button type="button" onClick={() => setActiveGroup('all')} aria-pressed={activeGroup === 'all'} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === 'all' ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>Toutes</button>
-            {moduleGroups.map((group) => <button key={group.id} type="button" onClick={() => setActiveGroup(group.id)} aria-pressed={activeGroup === group.id} className={`shrink-0 rounded-full border px-3.5 py-2 text-[10px] font-extrabold transition ${activeGroup === group.id ? 'border-blue-600 bg-blue-600 text-white' : 'border-[#e0e8f3] bg-white text-slate-500 hover:border-blue-200'}`}>{group.title}</button>)}
-          </div>
-          <div role="status" aria-live="polite" className="mb-3 mt-2 text-[10px] font-semibold text-slate-400">{visibleModules.length} application{visibleModules.length === 1 ? '' : 's'} affichée{visibleModules.length === 1 ? '' : 's'}</div>
-          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visibleModules.map((module) => {
-              const ModuleIcon = module.icon;
-              return <Link key={module.id} href={module.href} className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#e4ebf5] bg-white p-3 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white"><ModuleIcon size={19}/></span>
-                <span className="min-w-0 flex-1"><strong className="block truncate text-[11px] font-extrabold text-[#172b4d]">{module.name}</strong><span className="mt-0.5 block truncate text-[9px] text-slate-500">{module.description}</span></span>
-                {module.protected ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-bold text-amber-800" aria-label="Accès protégé"><LockKeyhole size={11} aria-hidden="true"/> Protégé</span> : <ArrowRight size={14} className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600"/>}
-              </Link>;
-            })}
-            {visibleModules.length === 0 && <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-9 text-center text-xs text-slate-500 sm:col-span-2 lg:col-span-3 xl:col-span-4">Aucune application ne correspond à cette recherche. Essayez un autre terme.</div>}
           </div>
         </section>
 
