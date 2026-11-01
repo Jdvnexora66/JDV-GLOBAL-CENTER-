@@ -128,3 +128,12 @@ Aucune modification Supabase, aucun déploiement, aucune fusion vers la branche 
 - Limite connue : aucun QR de vérification publique n'a été créé. Il faut d'abord une émission de jeton opaque côté serveur, révocable, puis un endpoint public de vérification à divulgation minimale. Le reçu actuel est un récapitulatif privé imprimable, pas une attestation indépendante.
 - Aucun schéma, RPC, politique RLS, fournisseur de paiement, secret, branche principale ou environnement de production n'a été modifié.
 - Contrôles non exécutés : build, TypeScript, lint, tests d'accès multi-utilisateurs, impression réelle et vérification sur mobile. Ils restent à effectuer avant toute mise en production.
+
+## Vérification publique des reçus par QR — cadrage du 1er novembre 2026
+
+- Analyse du modèle existant : `wallet_transactions` fournit déjà les références et statuts ; les QR existants de `payment_requests` sont des liens de demande de paiement, pas des preuves de transaction.
+- Spécification de sécurité ajoutée dans `docs/pay/JDV-PAY-VERIFICATION-RECU-QR.md`.
+- Architecture proposée : jeton aléatoire opaque de 256 bits, seul son hash conservé, expiration, révocation, endpoint serveur dédié, contrôle du statut courant et réponse publique minimale.
+- Le QR de vérification n'est pas encore activé. Aucun UUID ou référence de transaction ne doit servir de secret public.
+- Aucune migration, table, fonction RPC, Edge Function, politique RLS, clé ou configuration Supabase n'a été modifiée.
+- Les choix de durée, d'informations publiques et de technologie serveur restent à valider. Tests de sécurité non exécutés.
