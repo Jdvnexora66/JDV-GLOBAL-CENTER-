@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
-  ArrowRight, Search, Globe2, LayoutGrid, ShieldCheck, Building2, HeartHandshake,
+  ArrowRight, Search, Globe2, LayoutGrid, ShieldCheck, Building2, HeartHandshake, LockKeyhole,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/ui/AppLogo';
@@ -94,7 +94,7 @@ export default function HomePage() {
               return <Link key={module.id} href={module.href} className="group flex min-w-0 items-center gap-3 rounded-2xl border border-[#e4ebf5] bg-white p-3 transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-600 group-hover:text-white"><ModuleIcon size={19}/></span>
                 <span className="min-w-0 flex-1"><strong className="block truncate text-[11px] font-extrabold text-[#172b4d]">{module.name}</strong><span className="mt-0.5 block truncate text-[9px] text-slate-500">{module.description}</span></span>
-                <ArrowRight size={14} className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600"/>
+                {module.protected ? <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-bold text-amber-800" aria-label="Accès protégé"><LockKeyhole size={11} aria-hidden="true"/> Protégé</span> : <ArrowRight size={14} className="shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-600"/>}
               </Link>;
             })}
             {visibleModules.length === 0 && <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-9 text-center text-xs text-slate-500 sm:col-span-2 lg:col-span-3 xl:col-span-4">Aucune application ne correspond à cette recherche. Essayez un autre terme.</div>}
