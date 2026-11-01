@@ -21,7 +21,7 @@ export default function ApplicationAccountShortcut() {
     <Link
       href={href}
       aria-label={user ? `Profil et paramètres de ${app.name}` : `Créer un compte pour ${app.name}`}
-      className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#0B1B3D] px-4 py-3 text-xs font-extrabold text-white shadow-xl transition hover:bg-[#173967] sm:bottom-6 sm:right-6 sm:px-5 sm:text-sm"
+      className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 rounded-full border border-white/15 bg-[#0B1B3D] px-4 py-3 text-xs font-extrabold text-white shadow-xl transition hover:bg-[#173967] md:bottom-6 sm:right-6 sm:px-5 sm:text-sm"
     >
       {user ? <Settings2 size={17} className="text-[#F28C28]" /> : <UserRoundPlus size={17} className="text-[#F28C28]" />}
       <span>{loading ? 'Espace application' : user ? 'Profil & paramètres' : 'Créer un compte'}</span>
