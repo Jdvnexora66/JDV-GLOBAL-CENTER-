@@ -1,34 +1,92 @@
--- JDV PAY — public receipt verification tokens.
--- Apply only after reviewing the migration and confirming pgcrypto availability.
--- This file is NOT executed against Supabase by this commit.
-
-create extension if not exists pgcrypto with schema extensions;
+-- JDV PAY — secure public receipt verification credentials.
+-- pgcrypto is already installed in schema extensions on the target project.
 
 create table if not exists public.pay_receipt_verification_tokens (
   id uuid primary key default gen_random_uuid(),
   transaction_id uuid not null references public.wallet_transactions(id) on delete cascade,
   owner_user_id uuid not null references auth.users(id) on delete cascade,
-  token_hash text not null unique,
+  token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
   expires_at timestamptz not null,
   revoked_at timestamptz,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  constraint pay_receipt_token_max_lifetime check (expires_at <= created_at + interval '90 days')
 );
 
-create index if not exists pay_receipt_verification_tokens_transaction_idx
+create index if not exists pay_receipt_tokens_transaction_idx
   on public.pay_receipt_verification_tokens(transaction_id, created_at desc);
-create index if not exists pay_receipt_verification_tokens_expiry_idx
+create index if not exists pay_receipt_tokens_expiry_idx
   on public.pay_receipt_verification_tokens(expires_at);
 
 alter table public.pay_receipt_verification_tokens enable row level security;
 revoke all on public.pay_receipt_verification_tokens from anon, authenticated;
-grant select, insert, update, delete on public.pay_receipt_verification_tokens to service_role;
+grant insert (transaction_id, owner_user_id, token_hash, expires_at)
+  on public.pay_receipt_verification_tokens to authenticated;
+grant select on public.pay_receipt_verification_tokens to authenticated;
+grant update (revoked_at) on public.pay_receipt_verification_tokens to authenticated;
+grant all on public.pay_receipt_verification_tokens to service_role;
 
--- Issue/renew: authenticated owner only; only completed transactions.
--- The raw token is returned once and must never be logged or persisted by the client.
+drop policy if exists pay_receipt_tokens_owner_select on public.pay_receipt_verification_tokens;
+create policy pay_receipt_tokens_owner_select
+  on public.pay_receipt_verification_tokens for select to authenticated
+  using (owner_user_id = (select auth.uid()));
+
+drop policy if exists pay_receipt_tokens_owner_insert on public.pay_receipt_verification_tokens;
+create policy pay_receipt_tokens_owner_insert
+  on public.pay_receipt_verification_tokens for insert to authenticated
+  with check (
+    owner_user_id = (select auth.uid())
+    and exists (
+      select 1
+      from public.wallet_transactions wt
+      join public.wallets w on w.id = wt.wallet_id
+      where wt.id = transaction_id
+        and w.user_id = (select auth.uid())
+        and wt.transaction_status::text = 'completed'
+    )
+    and expires_at > now()
+    and expires_at <= now() + interval '90 days'
+  );
+
+drop policy if exists pay_receipt_tokens_owner_update on public.pay_receipt_verification_tokens;
+create policy pay_receipt_tokens_owner_update
+  on public.pay_receipt_verification_tokens for update to authenticated
+  using (owner_user_id = (select auth.uid()))
+  with check (owner_user_id = (select auth.uid()));
+
+-- Prevent owners from changing token identity, hash, transaction or expiry after issuance.
+create or replace function public.jdv_pay_guard_receipt_token_update()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.id is distinct from old.id
+    or new.transaction_id is distinct from old.transaction_id
+    or new.owner_user_id is distinct from old.owner_user_id
+    or new.token_hash is distinct from old.token_hash
+    or new.expires_at is distinct from old.expires_at
+    or new.created_at is distinct from old.created_at then
+    raise exception 'Les caractéristiques du jeton ne sont pas modifiables';
+  end if;
+  if old.revoked_at is not null and new.revoked_at is distinct from old.revoked_at then
+    raise exception 'Un jeton révoqué ne peut pas être réactivé';
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function public.jdv_pay_guard_receipt_token_update() from public, anon, authenticated;
+drop trigger if exists jdv_pay_guard_receipt_token_update on public.pay_receipt_verification_tokens;
+create trigger jdv_pay_guard_receipt_token_update
+  before update on public.pay_receipt_verification_tokens
+  for each row execute function public.jdv_pay_guard_receipt_token_update();
+
+-- Authenticated caller can issue only for their own completed wallet transaction.
+-- RLS validates owner and status; token table privileges permit only the required operations.
 create or replace function public.jdv_pay_issue_receipt_verification_token(p_transaction_id uuid)
 returns table(token text, expires_at timestamptz)
 language plpgsql
-security definer
+security invoker
 set search_path = ''
 as $$
 declare
@@ -68,10 +126,7 @@ begin
 end;
 $$;
 
--- Server-only verification: call through a rate-limited server endpoint using service_role.
--- Do not grant this RPC to anon/authenticated: direct RPC access would bypass HTTP rate limits.
--- Opaque token only; never accepts transaction UUID/reference as credential.
--- Status is read live, so refunds/cancellations invalidate the receipt's positive status.
+-- Public verification is deliberately callable only by the server's service-role client.
 create or replace function public.jdv_pay_verify_receipt_token(p_token text)
 returns table(
   is_valid boolean,
@@ -83,7 +138,7 @@ returns table(
 )
 language sql
 stable
-security definer
+security invoker
 set search_path = ''
 as $$
   select
@@ -104,9 +159,9 @@ $$;
 
 revoke all on function public.jdv_pay_issue_receipt_verification_token(uuid) from public, anon;
 grant execute on function public.jdv_pay_issue_receipt_verification_token(uuid) to authenticated;
-
-revoke all on function public.jdv_pay_verify_receipt_token(text) from public;
+revoke all on function public.jdv_pay_verify_receipt_token(text) from public, anon, authenticated;
 grant execute on function public.jdv_pay_verify_receipt_token(text) to service_role;
+revoke all on function public.jdv_pay_guard_receipt_token_update() from public, anon, authenticated;
 
 comment on table public.pay_receipt_verification_tokens is
   'JDV PAY opaque receipt verification credentials; stores SHA-256 token hashes only.';
