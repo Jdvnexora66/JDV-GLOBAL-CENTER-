@@ -120,21 +120,24 @@ export default function SettingsPage() {
 
             {activeTab === 'notifications' && (
               <div className="jdv-card">
-                <h2 className="font-bold text-foreground mb-4">Préférences de notifications</h2>
+                <h2 className="font-bold text-foreground mb-2">Préférences de notifications</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Les préférences ne sont pas encore enregistrées par un service de notifications. Aucun interrupteur n’est activé tant que cette fonction n’est pas configurée.
+                </p>
                 <div className="flex flex-col gap-4">
                   {[
                     { label: 'Notifications système', desc: 'Mises à jour importantes de la plateforme' },
                     { label: 'Notifications de sécurité', desc: 'Alertes de connexion et activité suspecte' },
                     { label: 'Notifications de services', desc: 'Mises à jour des services JDV' },
-                  ]?.map((n) => (
-                    <div key={n?.label} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+                  ].map((n) => (
+                    <div key={n.label} className="flex items-center justify-between gap-4 py-3 border-b border-border last:border-0">
                       <div>
-                        <p className="text-sm font-semibold text-foreground">{n?.label}</p>
-                        <p className="text-xs text-muted-foreground">{n?.desc}</p>
+                        <p className="text-sm font-semibold text-foreground">{n.label}</p>
+                        <p className="text-xs text-muted-foreground">{n.desc}</p>
                       </div>
-                      <div className="w-10 h-5 rounded-full bg-accent relative cursor-pointer">
-                        <div className="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white" />
-                      </div>
+                      <span className="jdv-badge shrink-0 text-xs bg-muted/20 text-muted-foreground">
+                        Non configuré
+                      </span>
                     </div>
                   ))}
                 </div>
