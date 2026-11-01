@@ -54,7 +54,7 @@ export default function MfaCard() {
 
   async function confirm(e: React.FormEvent) {
     e.preventDefault();
-    if (!enrolling || !/^\\d{6}$/.test(code)) {
+    if (!enrolling || !/^\d{6}$/.test(code)) {
       setMsg({ ok: false, text: 'Entrez le code à 6 chiffres.' });
       return;
     }
@@ -125,7 +125,7 @@ export default function MfaCard() {
           <img src={enrolling.qr} alt="QR code de configuration 2FA" className="h-44 w-44 rounded-lg border border-[var(--jdv-border)]" />
           <p className="text-sm">Ou saisissez cette clé manuellement : <code className="break-all rounded bg-[var(--jdv-primary-soft)] px-1.5 py-0.5">{enrolling.secret}</code></p>
           <label className="block text-sm">2. Entrez le code à 6 chiffres affiché
-            <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\\D/g, ''))} className="mt-1 w-40 rounded-lg border border-[var(--jdv-border)] px-3 py-2 tracking-widest" />
+            <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} className="mt-1 w-40 rounded-lg border border-[var(--jdv-border)] px-3 py-2 tracking-widest" />
           </label>
           <div className="flex gap-2">
             <button type="submit" disabled={busy || code.length !== 6} className="rounded-lg px-4 py-2 font-medium disabled:opacity-60" style={{ background: 'var(--jdv-primary)', color: 'var(--jdv-on-primary)' }}>{busy ? 'Vérification…' : 'Confirmer'}</button>
