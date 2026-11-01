@@ -95,6 +95,35 @@ export default function BeneficiariesPage() {
     setShowForm(true);
   };
 
+  const pickFromPhoneContacts = async () => {
+    type PickedContact = { name?: string[]; tel?: string[]; email?: string[] };
+    type ContactsNavigator = Navigator & {
+      contacts?: {
+        select: (properties: string[], options?: { multiple?: boolean }) => Promise<PickedContact[]>;
+      };
+    };
+    const contactsApi = (navigator as ContactsNavigator).contacts;
+    if (!window.isSecureContext || !contactsApi?.select) {
+      toast.info('La sélection de contacts n’est pas prise en charge sur cet appareil ou navigateur. Vous pouvez saisir les coordonnées manuellement.');
+      return;
+    }
+    try {
+      const selected = await contactsApi.select(['name', 'tel', 'email'], { multiple: false });
+      const contact = selected[0];
+      if (!contact) return;
+      setForm((current) => ({
+        ...current,
+        name: contact.name?.[0] ?? current.name,
+        phone: contact.tel?.[0] ?? current.phone,
+        email: contact.email?.[0] ?? current.email,
+      }));
+      toast.success('Coordonnées du contact ajoutées au formulaire. Vérifiez-les avant de sauvegarder.');
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') return;
+      toast.error('Impossible de lire ce contact. Vous pouvez saisir ses coordonnées manuellement.');
+    }
+  };
+
   const handleSave = async () => {
     if (!user || !form.name.trim()) { toast.error('Le nom est requis'); return; }
     setIsSaving(true);
@@ -189,6 +218,8 @@ export default function BeneficiariesPage() {
                 <X size={16} />
               </button>
             </div>
+
+            {!editingId && <button type="button" onClick={pickFromPhoneContacts} className="btn-ghost min-h-10 w-full px-3 py-2 text-sm">Choisir un contact du téléphone</button>}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
