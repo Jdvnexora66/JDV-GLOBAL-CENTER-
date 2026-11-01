@@ -69,3 +69,32 @@ Branche de travail : `design/jdv-global-center-visual-map-v1`
 - JDV PAY : refonte initiale du dashboard enregistrée ; audit des sous-pages et tests techniques toujours ouverts.
 - Les autres applications : inventaire et audit à réaliser par lots.
 - La plateforme n’est pas déclarée prête pour la production.
+
+
+## Revue approfondie des écrans JDV PAY — 1er novembre 2026
+
+### Écrans examinés
+- `/pay` : tableau de bord refondu dans le cycle initial.
+- `/pay/send` : portefeuille, sélection du bénéficiaire, devis RPC, frais/plafonds, confirmation et résultat.
+- `/pay/receive` : création de demande, QR/lien de paiement, suivi du statut et liste des demandes.
+- `/pay/history` : filtres, pagination, export CSV et présentation des opérations.
+- `/pay/beneficiaries` : recherche, création, modification, désactivation et lancement d'un envoi.
+- `PayHeader` : navigation interne commune aux écrans PAY.
+- Navigation globale mobile/desktop et layout racine consultés pour comprendre les contraintes transversales.
+
+### Ajustements visuels réalisés sur la branche de travail
+- `PayHeader` : navigation interne horizontalement défilable, éléments non compressibles, zones tactiles d'au moins 40 px et focus clavier visible.
+- `/pay/beneficiaries` : fiche bénéficiaire empilée sur mobile, coordonnées pouvant revenir à la ligne, actions élargies et boutons modifier/supprimer dotés de libellés accessibles.
+- Aucun changement de schéma, RPC, règle de frais, plafond, statut, authentification ou flux de paiement.
+
+### Points fonctionnels et techniques encore à traiter
+- `/pay/send` : le lien « Envoyer » depuis un bénéficiaire ajoute `?beneficiary=...`, mais le formulaire ne lit pas encore ce paramètre pour préselectionner la personne. Vérifier et corriger ce raccord sans modifier le contrôle serveur du bénéficiaire.
+- `/pay/send` : vérifier la fraîcheur du devis au moment de la confirmation et les erreurs réseau ; le serveur doit rester l'autorité pour les frais, plafonds et soldes.
+- `/pay/receive` : les actions copier/partager dépendent des API navigateur ; prévoir un retour utilisateur si le presse-papiers échoue. Vérifier les droits RLS de l'annulation et le cycle d'expiration.
+- `/pay/history` : les erreurs de chargement ne sont pas distinguées d'une liste vide ; l'export CSV et « Voir plus » n'ont pas encore d'état de chargement/erreur dédié.
+- `/pay/beneficiaries` : l'édition réinitialise actuellement pays et référence de compte au lieu de les préremplir ; la suppression/désactivation devrait demander confirmation. Vérifier aussi les erreurs de chargement des deux listes.
+- Faire les essais visuels réels aux largeurs 360, 390, 430, tablette et grand écran, ainsi que les essais clavier/lecteur d'écran.
+- Exécuter lint, type-check, build et tests de parcours dès qu'un environnement d'exécution est disponible.
+
+### État honnête
+Le dashboard et quelques problèmes de présentation mobile sont traités sur la branche de travail. Les pages secondaires ont été inspectées au niveau du code, mais JDV PAY n'est pas encore déclaré entièrement audité ni validé : les points ci-dessus et les tests d'exécution restent ouverts. Aucun déploiement n'a été effectué.
