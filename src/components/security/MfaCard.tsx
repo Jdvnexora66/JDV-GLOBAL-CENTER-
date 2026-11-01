@@ -13,6 +13,7 @@ export default function MfaCard() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [disableChallenge, setDisableChallenge] = useState<{ factorId: string; challengeId: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -91,15 +92,45 @@ export default function MfaCard() {
     await load();
   }
 
-  async function disable() {
+  async function beginDisable() {
     if (!verified || !window.confirm('Désactiver la double authentification ? Votre compte sera moins protégé.')) return;
     setBusy(true);
     setMsg(null);
-    const { error } = await sb.auth.mfa.unenroll({ factorId: verified.id });
+    const { data, error } = await sb.auth.mfa.challenge({ factorId: verified.id });
     setBusy(false);
+    if (error || !data) {
+      setMsg({ ok: false, text: 'Impossible de lancer la vérification. Réessayez.' });
+      return;
+    }
+    setDisableChallenge({ factorId: verified.id, challengeId: data.id });
+    setCode('');
+  }
+
+  async function confirmDisable(e: React.FormEvent) {
+    e.preventDefault();
+    if (!disableChallenge || !/^\\d{6}$/.test(code)) {
+      setMsg({ ok: false, text: 'Entrez le code à 6 chiffres de votre application.' });
+      return;
+    }
+    setBusy(true);
+    setMsg(null);
+    const { error: verifyError } = await sb.auth.mfa.verify({
+      factorId: disableChallenge.factorId,
+      challengeId: disableChallenge.challengeId,
+      code,
+    });
+    if (verifyError) {
+      setBusy(false);
+      setMsg({ ok: false, text: 'Code incorrect. La double authentification reste active.' });
+      return;
+    }
+    const { error } = await sb.auth.mfa.unenroll({ factorId: disableChallenge.factorId });
+    setBusy(false);
+    setDisableChallenge(null);
+    setCode('');
     setMsg(error
-      ? { ok: false, text: 'La désactivation a échoué. Vérifiez votre session et réessayez.' }
-      : { ok: true, text: 'Double authentification désactivée.' });
+      ? { ok: false, text: 'La désactivation n’a pas abouti. Votre facteur peut être encore actif ; actualisez le statut.' }
+      : { ok: true, text: 'Double authentification désactivée après vérification.' });
     await load();
   }
 
@@ -112,11 +143,23 @@ export default function MfaCard() {
       {!loading && verified && !enrolling && (
         <div className="mt-4 flex items-center justify-between gap-3">
           <p className="text-sm"><span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Activée</span></p>
-          <button type="button" onClick={disable} disabled={busy} className="rounded-lg border border-[var(--jdv-border)] px-3 py-2 text-sm hover:bg-[var(--jdv-primary-soft)] disabled:opacity-60">Désactiver</button>
+          <button type="button" onClick={beginDisable} disabled={busy} className="rounded-lg border border-[var(--jdv-border)] px-3 py-2 text-sm hover:bg-[var(--jdv-primary-soft)] disabled:opacity-60">Désactiver</button>
         </div>
       )}
       {!loading && !verified && !enrolling && (
         <button type="button" onClick={start} disabled={busy} className="mt-4 rounded-lg px-4 py-2 font-medium disabled:opacity-60" style={{ background: 'var(--jdv-primary)', color: 'var(--jdv-on-primary)' }}>Activer la 2FA</button>
+      )}
+      {disableChallenge && (
+        <form onSubmit={confirmDisable} className="mt-4 space-y-3">
+          <p className="text-sm font-medium">Confirmez la désactivation avec le code de votre application d’authentification.</p>
+          <label className="block text-sm">Code à 6 chiffres
+            <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\\D/g, ''))} className="mt-1 w-40 rounded-lg border border-[var(--jdv-border)] px-3 py-2 tracking-widest" />
+          </label>
+          <div className="flex gap-2">
+            <button type="submit" disabled={busy || code.length !== 6} className="rounded-lg px-4 py-2 font-medium disabled:opacity-60" style={{ background: 'var(--jdv-primary)', color: 'var(--jdv-on-primary)' }}>Confirmer la désactivation</button>
+            <button type="button" onClick={() => { setDisableChallenge(null); setCode(''); }} disabled={busy} className="rounded-lg border border-[var(--jdv-border)] px-4 py-2">Annuler</button>
+          </div>
+        </form>
       )}
       {enrolling && (
         <form onSubmit={confirm} className="mt-4 space-y-3">
