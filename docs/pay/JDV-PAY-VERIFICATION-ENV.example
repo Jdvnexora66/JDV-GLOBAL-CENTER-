@@ -1,0 +1,3 @@
+# JDV PAY receipt verification
+# Server-side only. Never prefix this secret with NEXT_PUBLIC_.
+SUPABASE_SERVICE_ROLE_KEY=
