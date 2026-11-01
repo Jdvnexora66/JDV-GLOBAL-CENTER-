@@ -87,11 +87,13 @@ export default function ImmoDashboardPage() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
   const [member, setMember] = useState(false);
+  const [roles, setRoles] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     if (!user) {
       setCounts(initialCounts);
       setMember(false);
+      setRoles([]);
       setBusy(false);
       return;
     }
@@ -101,16 +103,27 @@ export default function ImmoDashboardPage() {
     const membership = await hasApplicationMembership(supabase, user.id, 'immo');
     setMember(membership || isSuperAdmin);
 
-    const [properties, appointments, leases, maintenance, favorites, requests] = await Promise.all([
+    const [properties, appointments, leases, maintenance, favorites, requests, owned, agent, tenant] = await Promise.all([
       supabase.from('immo_properties').select('id', { count: 'exact', head: true }),
       supabase.from('immo_appointments').select('id', { count: 'exact', head: true }).eq('requester_user_id', user.id),
       supabase.from('immo_leases').select('id', { count: 'exact', head: true }).or('tenant_user_id.eq.' + user.id + ',landlord_user_id.eq.' + user.id),
       supabase.from('immo_maintenance_requests').select('id', { count: 'exact', head: true }).eq('reported_by', user.id),
       supabase.from('immo_favorites').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       supabase.from('immo_requests').select('id', { count: 'exact', head: true }).eq('requester_user_id', user.id),
+      supabase.from('immo_properties').select('id', { count: 'exact', head: true }).eq('owner_user_id', user.id),
+      supabase.from('immo_agents').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('immo_leases').select('id', { count: 'exact', head: true }).eq('tenant_user_id', user.id),
     ]);
+    const detected: string[] = [];
+    if (isSuperAdmin) detected.push('Administrateur');
+    if ((owned.count ?? 0) > 0) detected.push('Propriétaire');
+    if ((agent.count ?? 0) > 0) detected.push('Agent immobilier');
+    if ((tenant.count ?? 0) > 0) detected.push('Locataire');
+    if ((favorites.count ?? 0) > 0 || (requests.count ?? 0) > 0 || (appointments.count ?? 0) > 0) detected.push('Acheteur / candidat');
+    if (membership || isSuperAdmin) detected.push('Membre JDV IMMO');
+    setRoles([...new Set(detected)]);
 
-    const results = [properties, appointments, leases, maintenance, favorites, requests];
+    const results = [properties, appointments, leases, maintenance, favorites, requests, owned, agent, tenant];
     const firstError = results.find((result) => result.error)?.error;
     if (firstError) setError('Certaines statistiques ne sont pas disponibles avec les autorisations actuelles. Les autres espaces restent accessibles.');
     setCounts({
@@ -160,7 +173,7 @@ export default function ImmoDashboardPage() {
             </div>
             <div className="relative flex items-center gap-3 rounded-2xl border border-white/10 bg-black/10 p-4">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-[#F5A044]"><UserRound size={21} /></span>
-              <div><p className="text-sm font-semibold">{user ? (profile?.full_name || user.email || 'Compte connecté') : 'Visiteur'}</p><p className="mt-1 text-xs text-white/40">{isSuperAdmin ? 'Administration générale' : member ? 'Membre JDV IMMO' : 'Accès découverte'}</p></div>
+              <div><p className="text-sm font-semibold">{user ? (profile?.full_name || user.email || 'Compte connecté') : 'Visiteur'}</p><p className="mt-1 text-xs text-white/40">{roles.length ? roles.join(' · ') : member ? 'Membre JDV IMMO' : 'Accès découverte'}</p></div>
               {isSuperAdmin && <ShieldCheck className="ml-2 text-emerald-300" size={18} />}
             </div>
           </div>
@@ -178,6 +191,12 @@ export default function ImmoDashboardPage() {
             <Metric label="Favoris" value={counts.favorites} icon={Heart} note="Biens enregistrés dans votre sélection" />
             <Metric label="Demandes envoyées" value={counts.requests} icon={Wallet} note="Demandes immobilières de votre compte" />
           </div>
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-white/10 bg-white/[.025] p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#F5A044]">Profils détectés</p><h2 className="mt-1 text-lg font-bold">Vos accès JDV IMMO</h2></div><span className="text-xs text-white/40">Basés sur vos dossiers accessibles</span></div>
+          <div className="mt-4 flex flex-wrap gap-2">{(roles.length ? roles : ['Visiteur']).map((role) => <span key={role} className="rounded-full border border-[#F28C28]/25 bg-[#F28C28]/10 px-3 py-1.5 text-xs font-semibold text-[#F5A044]">{role}</span>)}</div>
+          <p className="mt-3 text-xs leading-5 text-white/40">Les profils sont déduits des relations et dossiers visibles. Les autorisations réelles restent déterminées par les règles de sécurité de la base, et non par ces étiquettes d’interface.</p>
         </section>
 
         <section className="mt-9">
