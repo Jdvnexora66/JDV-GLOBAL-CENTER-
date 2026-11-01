@@ -108,7 +108,7 @@ export default function MfaCard() {
 
   async function confirmDisable(e: React.FormEvent) {
     e.preventDefault();
-    if (!disableChallenge || !/^\\d{6}$/.test(code)) {
+    if (!disableChallenge || !/^\d{6}$/.test(code)) {
       setMsg({ ok: false, text: 'Entrez le code à 6 chiffres de votre application.' });
       return;
     }
@@ -153,7 +153,7 @@ export default function MfaCard() {
         <form onSubmit={confirmDisable} className="mt-4 space-y-3">
           <p className="text-sm font-medium">Confirmez la désactivation avec le code de votre application d’authentification.</p>
           <label className="block text-sm">Code à 6 chiffres
-            <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\\D/g, ''))} className="mt-1 w-40 rounded-lg border border-[var(--jdv-border)] px-3 py-2 tracking-widest" />
+            <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} className="mt-1 w-40 rounded-lg border border-[var(--jdv-border)] px-3 py-2 tracking-widest" />
           </label>
           <div className="flex gap-2">
             <button type="submit" disabled={busy || code.length !== 6} className="rounded-lg px-4 py-2 font-medium disabled:opacity-60" style={{ background: 'var(--jdv-primary)', color: 'var(--jdv-on-primary)' }}>Confirmer la désactivation</button>
