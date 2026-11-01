@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowDownLeft, ArrowRight, ArrowUpRight, Clock3, CreditCard,
-  History, Plus, ShieldCheck, Sparkles, Users, WalletCards,
+  History, ShieldCheck, Sparkles, Users, WalletCards,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
