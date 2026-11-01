@@ -98,3 +98,23 @@ Branche de travail : `design/jdv-global-center-visual-map-v1`
 
 ### État honnête
 Le dashboard et quelques problèmes de présentation mobile sont traités sur la branche de travail. Les pages secondaires ont été inspectées au niveau du code, mais JDV PAY n'est pas encore déclaré entièrement audité ni validé : les points ci-dessus et les tests d'exécution restent ouverts. Aucun déploiement n'a été effectué.
+
+## Mise à jour JDV PAY — 1er novembre 2026
+
+### Modifications supplémentaires enregistrées sur la branche de travail
+- `/pay/send` lit maintenant le paramètre `beneficiary` pour présélectionner un bénéficiaire, réinitialise la confirmation si le bénéficiaire change et affiche un récapitulatif explicite avant le transfert.
+- `/pay/beneficiaries` propose le sélecteur de contacts natif lorsque le navigateur le prend en charge et que le contexte est sécurisé ; la sélection est déclenchée par l'utilisateur et la saisie manuelle reste disponible.
+- `/pay/settings` expose le composant MFA TOTP déjà présent dans le dépôt.
+- `MfaCard` gère les erreurs de lecture/enrôlement et exige maintenant un défi TOTP vérifié avant la désactivation du facteur.
+- `/pay/kyc` distingue l'échec de chargement, empêche les soumissions si le statut n'est pas récupéré, gère les erreurs d'envoi, tente de supprimer un fichier si son enregistrement KYC échoue et demande une confirmation explicite avant soumission.
+
+### Limites et validations restantes
+- Le nom affiché dans le transfert reste le nom du bénéficiaire enregistré : il ne constitue pas une identité légalement vérifiée. Le contrôle de correspondance avec le titulaire du compte destinataire doit être fourni par un service serveur/partenaire avant de promettre une vérification du nom.
+- Le Contact Picker dépend du navigateur et du système ; il ne donne pas un accès universel au carnet d'adresses.
+- Le consentement affiché dans le parcours KYC ne remplace pas une politique de confidentialité validée, une base légale documentée ni une politique de conservation.
+- Les politiques RLS et les permissions effectives du bucket `kyc-documents` n'ont pas été auditées sur le projet Supabase actif. Le schéma de référence du dépôt n'est pas une preuve de la configuration déployée.
+- La 2FA est proposée dans l'interface, mais son exigence pour les opérations financières doit être imposée et testée côté serveur ; les codes de secours et la récupération sécurisée restent à concevoir.
+- Aucun fournisseur KYC ou carte n'a été activé. Aucun reçu PDF/QR de transaction certifié n'a été ajouté.
+- Type-check, lint, build, tests RLS et tests de parcours restent à exécuter dans un environnement autorisé.
+
+Aucune modification Supabase, aucun déploiement, aucune fusion vers la branche principale et aucune opération financière réelle n'ont été effectués.
