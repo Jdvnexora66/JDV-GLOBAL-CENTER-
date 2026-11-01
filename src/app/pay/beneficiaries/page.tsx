@@ -257,7 +257,7 @@ export default function BeneficiariesPage() {
         ) : (
           <div className="jdv-card divide-y divide-border">
             {filtered.map((b) => (
-              <div key={b.id} className="flex items-center gap-4 px-4 py-4">
+              <div key={b.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4">
                 <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-sm flex-shrink-0">
                   {b.name[0].toUpperCase()}
                 </div>
