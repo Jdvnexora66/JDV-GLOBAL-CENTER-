@@ -1,7 +1,8 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import PayHeader from '@/components/pay/PayHeader';
@@ -67,8 +68,9 @@ export default function HistoryPage() {
               <li key={t.id} className="flex items-center justify-between gap-3 py-3 text-sm">
                 <div className="min-w-0"><p className="font-medium text-foreground">{TYPE_LABEL[t.transaction_type] ?? 'Opération'}{t.transaction_status !== 'completed' && <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{STATUS_LABEL[t.transaction_status] ?? t.transaction_status}</span>}</p>
                   <p className="truncate text-xs text-muted-foreground">{t.description ?? t.reference} · {new Date(t.created_at).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })}</p></div>
-                <div className="shrink-0 text-right"><p className={`font-semibold ${inn ? 'text-success' : 'text-foreground'}`}>{inn ? '+' : '−'}{money(Number(t.amount), t.currencies.code)}</p>
-                  {Number(t.fee_amount) > 0 && <p className="text-xs text-muted-foreground">frais {money(Number(t.fee_amount), t.currencies.code)}</p>}</div>
+                <div className="flex shrink-0 flex-col items-end gap-1 text-right"><p className={`font-semibold ${inn ? 'text-success' : 'text-foreground'}`}>{inn ? '+' : '−'}{money(Number(t.amount), t.currencies.code)}</p>
+                  {Number(t.fee_amount) > 0 && <p className="text-xs text-muted-foreground">frais {money(Number(t.fee_amount), t.currencies.code)}</p>}
+                  {t.transaction_status === 'completed' && <Link href={`/pay/receipt/${t.id}`} className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline"><FileText size={13} />Reçu</Link>}</div>
               </li>); })}
           </ul>
         )}
