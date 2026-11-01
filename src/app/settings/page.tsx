@@ -88,12 +88,12 @@ export default function SettingsPage() {
                     </div>
                     <Link href="/profile" className="btn-secondary text-sm px-3 py-1.5">Modifier</Link>
                   </div>
-                  <div className="flex items-center justify-between py-3 border-b border-border">
+                  <div className="flex items-center justify-between gap-4 py-3 border-b border-border">
                     <div>
                       <p className="text-sm font-semibold text-foreground">Authentification à deux facteurs</p>
-                      <p className="text-xs text-muted-foreground">Bientôt disponible</p>
+                      <p className="text-xs text-muted-foreground">La gestion 2FA est disponible dans les paramètres JDV PAY.</p>
                     </div>
-                    <span className="jdv-badge text-xs bg-muted/20 text-muted-foreground">Prochainement</span>
+                    <Link href="/pay/settings" className="btn-secondary shrink-0 text-sm px-3 py-1.5">Gérer</Link>
                   </div>
                   <div className="flex items-center justify-between py-3">
                     <div>
