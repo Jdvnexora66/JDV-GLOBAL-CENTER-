@@ -68,7 +68,9 @@ begin
 end;
 $$;
 
--- Public verification: opaque token only; never accepts transaction UUID/reference as credential.
+-- Server-only verification: call through a rate-limited server endpoint using service_role.
+-- Do not grant this RPC to anon/authenticated: direct RPC access would bypass HTTP rate limits.
+-- Opaque token only; never accepts transaction UUID/reference as credential.
 -- Status is read live, so refunds/cancellations invalidate the receipt's positive status.
 create or replace function public.jdv_pay_verify_receipt_token(p_token text)
 returns table(
@@ -104,7 +106,7 @@ revoke all on function public.jdv_pay_issue_receipt_verification_token(uuid) fro
 grant execute on function public.jdv_pay_issue_receipt_verification_token(uuid) to authenticated;
 
 revoke all on function public.jdv_pay_verify_receipt_token(text) from public;
-grant execute on function public.jdv_pay_verify_receipt_token(text) to anon, authenticated;
+grant execute on function public.jdv_pay_verify_receipt_token(text) to service_role;
 
 comment on table public.pay_receipt_verification_tokens is
   'JDV PAY opaque receipt verification credentials; stores SHA-256 token hashes only.';
