@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AlertTriangle, ArrowLeft, FileWarning, Loader2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
@@ -21,11 +21,16 @@ const reasons = [
 export default function MarketplaceSafetyReportPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const params = useSearchParams();
+  const [listingId, setListingId] = useState('');
+  const [sellerId, setSellerId] = useState('');
+  const [orderId, setOrderId] = useState('');
   const supabase = useMemo(() => createClient(), []);
-  const listingId = params.get('listing') || '';
-  const sellerId = params.get('seller') || '';
-  const orderId = params.get('order') || '';
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setListingId(params.get('listing') || '');
+    setSellerId(params.get('seller') || '');
+    setOrderId(params.get('order') || '');
+  }, []);
   const [reason, setReason] = useState(orderId ? 'order_dispute' : 'suspected_scam');
   const [details, setDetails] = useState('');
   const [evidence, setEvidence] = useState('');
