@@ -88,7 +88,7 @@ export default function SellerDashboardPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'orders' | 'settlements'>('overview');
 
   useEffect(() => {
-    if (!user) { router.replace('/inscription/marketplace'); return; }
+    if (!user) { router.replace('/marketplace/connexion?mode=register'); return; }
     let active = true;
     void (async () => {
       const { data: membership, error } = await supabase
@@ -96,7 +96,7 @@ export default function SellerDashboardPage() {
         .eq('user_id', user.id).eq('app_key', 'marketplace').maybeSingle();
       if (!active) return;
       if (error || !membership || membership.status !== 'active') {
-        router.replace('/inscription/marketplace');
+        router.replace('/marketplace/connexion');
         return;
       }
       loadSellerData();
