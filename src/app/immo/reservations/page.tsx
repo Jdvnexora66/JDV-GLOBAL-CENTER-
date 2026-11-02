@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CalendarClock, CheckCircle2, Clock3, RefreshCw, Search, XCircle } from 'lucide-react';
+import { Clock3, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 
