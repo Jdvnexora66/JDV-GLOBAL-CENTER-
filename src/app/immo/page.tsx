@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Activity, ArrowRight, Bell, Building2, CalendarDays, ChartNoAxesCombined, ChevronDown, ChevronRight, CircleHelp, ClipboardList, Globe2, Handshake, Home, LayoutDashboard, LogOut, Menu, MessageCircle, Search, Settings, ShieldCheck, Users, Wrench, X, BriefcaseBusiness } from 'lucide-react';
+import { Activity, ArrowRight, Bell, Building2, CalendarDays, ChartNoAxesCombined, ChevronDown, ChevronRight, CircleHelp, ClipboardList, Globe2, Handshake, Home, LayoutDashboard, LogOut, Menu, MessageCircle, Search, Settings, ShieldCheck, Users, X, BriefcaseBusiness } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 
@@ -34,9 +34,10 @@ export default function ImmoPage() {
 
   const load=useCallback(async()=>{
     setBusy(true);setError('');
+    const monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
     const [pc,rc,ac,vc,pr,proj,rr,ar,req,tr]=await Promise.all([
       supabase.from('immo_properties').select('id',{count:'exact',head:true}).eq('property_status','published'),
-      supabase.from('immo_reservations').select('id',{count:'exact',head:true}),
+      supabase.from('immo_reservations').select('id',{count:'exact',head:true}).gte('created_at',monthStart.toISOString()),
       supabase.from('immo_agencies').select('id',{count:'exact',head:true}),
       supabase.from('immo_appointments').select('id',{count:'exact',head:true}),
       supabase.from('immo_properties').select('id,title,city,price,transaction_type,property_status,created_at,property_type_id').order('created_at',{ascending:false}).limit(500),
@@ -100,7 +101,7 @@ export default function ImmoPage() {
           {[
             {label:'Biens immobiliers',value:metrics.properties,detail:'Biens publiés',icon:Home,color:'bg-blue-600',border:'border-blue-100'},
             {label:'Réservations ce mois',value:metrics.reservations,detail:'Total enregistré',icon:CalendarDays,color:'bg-emerald-500',border:'border-emerald-100'},
-            {label:'Clients actifs',value:metrics.clients,detail:'Identifiants distincts visibles',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
+            {label:'Clients identifiés',value:metrics.clients,detail:'Dossiers récents consultés',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
             {label:'Agences partenaires',value:metrics.agencies,detail:'Agences enregistrées',icon:Handshake,color:'bg-orange-500',border:'border-orange-100'},
           ].map(({label,value,detail,icon:Icon,color,border})=><div key={label} className={'flex min-h-[96px] items-center gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm '+border}><div className={'grid h-14 w-14 shrink-0 place-items-center rounded-full text-white shadow-lg '+color}><Icon size={27}/></div><div className="min-w-0"><div className="text-sm font-bold">{label}</div><div className="mt-1 text-2xl font-black tabular-nums">{busy?'—':number(value)}</div><div className="text-[10px] text-slate-500">{detail}</div></div></div>)}
         </section>
