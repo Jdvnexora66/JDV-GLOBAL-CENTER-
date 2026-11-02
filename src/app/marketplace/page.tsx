@@ -109,7 +109,7 @@ export default function MarketplacePage() {
     <div><Truck className="mb-3 text-[#F28C28]" size={23}/><h3 className="font-bold">Livraison transparente</h3><p className="mt-2 text-sm leading-6 text-white/55">Les frais, délais et modalités doivent être confirmés dans le parcours de commande.</p></div>
     <div><Store className="mb-3 text-[#F28C28]" size={23}/><h3 className="font-bold">Votre activité mérite sa vitrine</h3><p className="mt-2 text-sm leading-6 text-white/55">Vendez vos créations, produits ou articles professionnels avec votre propre boutique.</p><Link href="/marketplace/seller/create" className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-[#ffb56f]">Commencer à vendre <ArrowRight size={15}/></Link></div>
    </section>
-   <footer className="py-8 text-center text-xs leading-6 text-white/35">JDV Marketplace · Les commandes et paiements ne sont confirmés que par les parcours transactionnels sécurisés de la plateforme.</footer>
+   <footer className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 py-8 text-center text-xs leading-6 text-white/45"><span>JDV Marketplace · Les commandes et paiements ne sont confirmés que par les parcours transactionnels sécurisés de la plateforme.</span><Link href="/marketplace/securite/signaler" className="font-bold text-[#ffb56f] hover:text-white">Signaler une annonce ou un vendeur</Link></footer>
   </div>
  </main>;
 }

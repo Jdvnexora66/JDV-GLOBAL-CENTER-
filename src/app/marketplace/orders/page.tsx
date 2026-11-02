@@ -333,6 +333,9 @@ export default function BuyerOrdersPage() {
                         <Link href={`/marketplace/messages?order=${order.id}`} className="btn-outline text-xs flex items-center gap-1">
                           <MessageCircle size={12} /> Contacter le vendeur
                         </Link>
+                        <Link href={`/marketplace/securite/signaler?order=${order.id}`} className="btn-outline text-xs flex items-center gap-1 text-danger border-danger/30">
+                          <AlertCircle size={12} /> Signaler / ouvrir un litige
+                        </Link>
                       </div>
                     </div>
                   )}
