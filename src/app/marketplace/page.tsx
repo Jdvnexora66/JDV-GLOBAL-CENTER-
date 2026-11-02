@@ -35,8 +35,8 @@ export default function MarketplacePage() {
  const filtered=listings.filter(x=>[x.title,x.description,x.short_description,...(x.tags||[])].join(' ').toLowerCase().includes(query.trim().toLowerCase())&&(!categoryId||x.category_id===categoryId));
  const money=(amount:number,id:string|null)=>new Intl.NumberFormat('fr-FR',{maximumFractionDigits:0}).format(amount)+' '+(currencies.find(x=>x.id===id)?.code||'');
  const toggle=async(item:Listing)=>{
-  if(!user){router.push('/inscription/marketplace');return}
-  if(!await hasApplicationMembership(supabase,user.id,'marketplace')){router.push('/inscription/marketplace');return}
+  if(!user){router.push('/marketplace/connexion?mode=register');return}
+  if(!await hasApplicationMembership(supabase,user.id,'marketplace')){router.push('/marketplace/connexion');return}
   const exists=favorites.includes(item.id);setError('');setMessage('');
   const result=exists?await supabase.from('marketplace_favorites').delete().eq('user_id',user.id).eq('listing_id',item.id):await supabase.from('marketplace_favorites').insert({user_id:user.id,listing_id:item.id,seller_id:item.seller_id});
   if(result.error)setError(result.error.message);else{setFavorites(old=>exists?old.filter(id=>id!==item.id):[...old,item.id]);setMessage(exists?'Article retiré des favoris.':'Article ajouté aux favoris.')}
