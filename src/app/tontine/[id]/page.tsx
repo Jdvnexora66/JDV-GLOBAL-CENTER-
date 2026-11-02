@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 
 type TontineRow = {
-  id: string; name: string; description: string | null; tontine_type: 'group' | 'individual';
+  id: string; name: string; description: string | null; tontine_type: 'group' | 'individual'; tontine_class: string | null;
   status: string; contribution_amount: number; currency_id: string; frequency: string;
   cycle_periods: number; member_limit: number; starts_on: string | null; late_fee_amount: number;
   president_member_id: string | null;
@@ -24,6 +24,7 @@ type Overview = {
   cycles_total: number; members: MemberRow[]; schedules: ScheduleRow[]; my_schedules: ScheduleRow[]; rotations: RotationRow[]; payouts: unknown[]; join_link: unknown;
 };
 
+const classLabels: Record<string, string> = { rotating_classic: 'Rotative classique', target_savings: 'Épargne à objectif', solidarity: 'Solidarité', commercial_professional: 'Commerciale / professionnelle', flexible_contributions: 'Cotisations flexibles', custom: 'Personnalisée' };
 const frequencyLabels: Record<string, string> = { daily: 'Quotidienne', weekly: 'Hebdomadaire', biweekly: 'Toutes les deux semaines', monthly: 'Mensuelle', quarterly: 'Trimestrielle' };
 const statusLabels: Record<string, string> = { draft: 'Brouillon', open: 'Ouverte', active: 'Active', paused: 'En pause', completed: 'Terminée', cancelled: 'Annulée', pending: 'En attente', approved: 'Approuvée', rejected: 'Refusée', suspended: 'Suspendue', left: 'Parti' };
 const money = (value: number, currency?: string | null) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value) + (currency ? ' ' + currency : '');
@@ -50,7 +51,7 @@ export default function TontineDetailPage() {
     setBusy(true);
     setError('');
     const [t, o, membership] = await Promise.all([
-      supabase.from('tontines').select('id,name,description,tontine_type,status,contribution_amount,currency_id,frequency,cycle_periods,member_limit,starts_on,late_fee_amount,president_member_id').eq('id', id).single(),
+      supabase.from('tontines').select('id,name,description,tontine_type,tontine_class,status,contribution_amount,currency_id,frequency,cycle_periods,member_limit,starts_on,late_fee_amount,president_member_id').eq('id', id).single(),
       supabase.rpc('tontine_overview', { p_tontine_id: id }),
       supabase.from('tontine_members').select('membership_status').eq('tontine_id', id).eq('user_id', user.id).maybeSingle(),
     ]);
@@ -102,14 +103,6 @@ export default function TontineDetailPage() {
     await load();
   }
 
-  async function paySchedule(scheduleId: string) {
-    setWorking(scheduleId); setError(''); setNotice('');
-    const result = await supabase.rpc('tontine_pay_contribution', { p_schedule_id: scheduleId, p_wallet_id: null, p_amount: null });
-    if (result.error) setError('Cotisation non enregistrée : ' + result.error.message);
-    else setNotice('Cotisation enregistrée par JDV PAY. Référence de contribution : ' + String((result.data as { contribution_id?: string } | null)?.contribution_id ?? 'confirmée') + '.');
-    setWorking('');
-    await load();
-  }
 
   if (authLoading || busy) return <main className="grid min-h-screen place-items-center bg-[#0B1B3D] text-white"><LoaderCircle className="animate-spin"/></main>;
   if (!user) return <main className="min-h-screen bg-[#0B1B3D] p-8 text-white"><Link href="/auth/login" className="underline">Connecte-toi pour continuer</Link></main>;
@@ -127,7 +120,7 @@ export default function TontineDetailPage() {
     <div className="mx-auto max-w-7xl">
       <div className="flex items-center justify-between gap-3"><Link href="/tontine" className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white"><ArrowLeft size={16}/> JDV Tontine</Link><button onClick={() => void load()} disabled={working !== ''} className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2 text-sm disabled:opacity-50"><RefreshCw size={15}/> Actualiser</button></div>
       <header className="mt-6 rounded-3xl border border-white/10 bg-white/[.06] p-6 sm:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.22em] text-[#F28C28]">{tontine.tontine_type === 'individual' ? 'Épargne individuelle' : 'Tontine de groupe'}</p><h1 className="mt-2 text-3xl font-black">{tontine.name}</h1>{tontine.description && <p className="mt-2 max-w-3xl text-sm text-white/60">{tontine.description}</p>}</div><span className="rounded-full border border-white/10 px-3 py-1 text-sm">{statusLabels[tontine.status] ?? tontine.status}</span></div>
+        <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-[.22em] text-[#F28C28]">{tontine.tontine_type === 'individual' ? 'Épargne individuelle' : 'Tontine de groupe'}{tontine.tontine_class ? ' · ' + (classLabels[tontine.tontine_class] ?? tontine.tontine_class) : ''}</p><h1 className="mt-2 text-3xl font-black">{tontine.name}</h1>{tontine.description && <p className="mt-2 max-w-3xl text-sm text-white/60">{tontine.description}</p>}</div><span className="rounded-full border border-white/10 px-3 py-1 text-sm">{statusLabels[tontine.status] ?? tontine.status}</span></div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Cotisation</p><p className="mt-1 font-bold">{money(tontine.contribution_amount, overview?.tontine.currency)}</p></div><div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Fréquence</p><p className="mt-1 font-bold">{frequencyLabels[tontine.frequency] ?? tontine.frequency}</p></div><div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Périodes</p><p className="mt-1 font-bold">{tontine.cycle_periods}</p></div><div className="rounded-xl border border-white/10 p-3"><p className="text-xs text-white/40">Caisse enregistrée</p><p className="mt-1 font-bold">{money(overview?.pool.balance ?? 0, overview?.tontine.currency)}</p></div></div>
       </header>
       {error && <div role="alert" className="mt-5 rounded-xl border border-red-300/20 bg-red-400/10 p-4 text-sm text-red-100">{error}</div>}
@@ -154,10 +147,10 @@ export default function TontineDetailPage() {
       </section>}
 
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/10 bg-white/[.04] p-5"><h2 className="flex items-center gap-2 text-lg font-bold"><CalendarClock size={19} className="text-[#F28C28]"/> Mes échéances</h2><div className="mt-4 space-y-3">{ownSchedules.map((schedule) => <article key={schedule.schedule_id} className="rounded-xl border border-white/10 p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">Période {schedule.period}</p><p className="mt-1 text-xs text-white/45">Échéance : {new Date(schedule.due_on + 'T00:00:00').toLocaleDateString('fr-FR')}</p></div><span className="rounded-full border border-white/10 px-2.5 py-1 text-xs">{statusLabels[schedule.status] ?? schedule.status}</span></div><p className="mt-3 text-sm">{money(schedule.expected, overview?.tontine.currency)} · payé {money(schedule.paid, overview?.tontine.currency)}</p>{overview?.me.is_member && ['due','partially_paid','late'].includes(schedule.status) && <button onClick={() => void paySchedule(schedule.schedule_id)} disabled={working !== '' || tontine.status !== 'open' && tontine.status !== 'active'} className="mt-3 w-full rounded-lg bg-[#F28C28] px-3 py-2 text-sm font-bold text-[#0B1B3D] disabled:opacity-50">{working === schedule.schedule_id ? 'Paiement en cours…' : 'Payer via JDV PAY'}</button>}</article>)}</div>{ownSchedules.length === 0 && <p className="mt-4 rounded-xl border border-dashed border-white/15 p-5 text-center text-sm text-white/45">Aucune échéance personnelle pour le moment.</p>}</div>
+        <div className="rounded-2xl border border-white/10 bg-white/[.04] p-5"><h2 className="flex items-center gap-2 text-lg font-bold"><CalendarClock size={19} className="text-[#F28C28]"/> Mes échéances</h2><div className="mt-4 space-y-3">{ownSchedules.map((schedule) => <article key={schedule.schedule_id} className="rounded-xl border border-white/10 p-4"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">Période {schedule.period}</p><p className="mt-1 text-xs text-white/45">Échéance : {new Date(schedule.due_on + 'T00:00:00').toLocaleDateString('fr-FR')}</p></div><span className="rounded-full border border-white/10 px-2.5 py-1 text-xs">{statusLabels[schedule.status] ?? schedule.status}</span></div><p className="mt-3 text-sm">{money(schedule.expected, overview?.tontine.currency)} · payé {money(schedule.paid, overview?.tontine.currency)}</p>{overview?.me.is_member && ['due','partially_paid','late'].includes(schedule.status) && <div className="mt-3 rounded-lg border border-amber-200/20 bg-amber-300/5 px-3 py-3 text-xs leading-5 text-amber-100/80">Paiement en ligne temporairement désactivé. Cette échéance reste consultable ; aucun débit ni mouvement financier ne sera lancé depuis JDV Tontine.</div>}</article>)}</div>{ownSchedules.length === 0 && <p className="mt-4 rounded-xl border border-dashed border-white/15 p-5 text-center text-sm text-white/45">Aucune échéance personnelle pour le moment.</p>}</div>
         <div className="rounded-2xl border border-white/10 bg-white/[.04] p-5"><h2 className="flex items-center gap-2 text-lg font-bold"><ShieldCheck size={19} className="text-[#F28C28]"/> Ordre des bénéficiaires</h2><div className="mt-4 space-y-3">{(overview?.rotations ?? []).map((rotation) => <article key={rotation.rotation_id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-4"><div><p className="font-semibold">#{rotation.order} · {rotation.name}{rotation.is_me ? ' · vous' : ''}</p><p className="mt-1 text-xs text-white/45">Date prévue : {rotation.planned_payout_on ? new Date(rotation.planned_payout_on + 'T00:00:00').toLocaleDateString('fr-FR') : 'À planifier'}</p></div><div className="text-right"><p className="font-semibold">{money(rotation.amount, overview?.tontine.currency)}</p><p className="mt-1 text-xs text-white/45">{statusLabels[rotation.status] ?? rotation.status}</p></div></article>)}</div>{(overview?.rotations ?? []).length === 0 && <p className="mt-4 rounded-xl border border-dashed border-white/15 p-5 text-center text-sm text-white/45">{tontine.tontine_type === 'individual' ? 'La rotation de maturité est créée avec le cycle individuel.' : 'L’ordre apparaît lorsqu’un cycle est ouvert.'}</p>}</div>
       </section>
-      <p className="mt-6 text-xs leading-5 text-white/35">Les paiements utilisent les RPC JDV Tontine/JDV PAY existantes. Aucun solde n’est modifié depuis l’interface sans validation serveur. Les décaissements wallet attendent la collecte complète et le worker existant.</p>
+      <p className="mt-6 text-xs leading-5 text-white/35">Les paiements et décaissements réels sont désactivés dans cette version. Les échéances et états restent consultables ; aucun débit ni mouvement financier n’est déclenché.</p>
     </div>
   </main>;
 }
