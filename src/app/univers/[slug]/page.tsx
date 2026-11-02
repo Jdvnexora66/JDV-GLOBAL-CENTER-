@@ -199,7 +199,7 @@ export default async function UniverseWorkspacePage({ params }: { params: Promis
             </div>
           </header>
 
-          <div className="mx-auto max-w-[1600px] space-y-7 px-4 py-5 sm:px-7 sm:py-7 xl:px-9">
+          <div className="mx-auto max-w-[1600px] space-y-7 px-4 py-5 pb-24 sm:px-7 sm:py-7 sm:pb-24 xl:px-9 lg:pb-7">
             <section className="relative isolate min-h-[330px] overflow-hidden rounded-[26px] bg-[#102e5a] shadow-xl sm:min-h-[365px]" style={{ backgroundImage: `linear-gradient(90deg, rgba(5,25,55,.96) 0%, rgba(5,25,55,.86) 39%, rgba(5,25,55,.12) 100%), url(${experience.heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
               <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#071d42]/40 to-transparent"/>
               <div className="relative flex min-h-[330px] max-w-3xl flex-col justify-center px-6 py-9 text-white sm:min-h-[365px] sm:px-10 lg:px-12">
@@ -273,6 +273,12 @@ export default async function UniverseWorkspacePage({ params }: { params: Promis
           </div>
         </div>
       </div>
+      <nav aria-label="Navigation mobile" className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-4 border-t border-slate-200 bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-8px_24px_rgba(15,35,70,.08)] backdrop-blur-xl lg:hidden">
+        <Link href={`/univers/${group.id}`} className="flex flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-extrabold" style={{ color: experience.accent }}><LayoutGrid size={20}/>Accueil</Link>
+        <Link href="#applications" className="flex flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-bold text-slate-500"><BriefcaseBusiness size={20}/>Applications</Link>
+        <Link href="/univers" className="flex flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-bold text-slate-500"><Compass size={20}/>Univers</Link>
+        <Link href="/help" className="flex flex-col items-center gap-1 rounded-xl py-1.5 text-[10px] font-bold text-slate-500"><CircleHelp size={20}/>Aide</Link>
+      </nav>
     </main>
   );
 }
