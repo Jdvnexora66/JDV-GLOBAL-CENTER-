@@ -85,6 +85,8 @@ export default function ImmoPage() {
     setBusy(false);
   }, [supabase, user, typeFilter, transactionFilter, countryFilter, cityFilter, minPrice, maxPrice, minBedrooms, minSurface, furnishedFilter, query]);
 
+  useEffect(() => { const initialQuery = new URLSearchParams(window.location.search).get('q'); if (initialQuery) setQuery(initialQuery); }, []);
+
   useEffect(() => { if (!loading) void load(); }, [loading, load]);
 
   const currency = (id: string | null) => currencies.find((item) => item.id === id);
