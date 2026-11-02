@@ -12,12 +12,7 @@ type Currency = { id: string; code: string; symbol: string; name: string };
 const productTypes = [
   { id: 'physical', name: 'Produit physique', detail: 'Articles matériels, stock et livraison', digital: false },
   { id: 'files', name: 'Fichiers numériques', detail: 'E-books, documents, modèles et ressources', digital: true },
-  { id: 'course', name: 'Formation / cours', detail: 'Programmes pédagogiques et supports', digital: true },
-  { id: 'license', name: 'Licence', detail: 'Clés, accès et autorisations d’utilisation', digital: true },
-  { id: 'bundle', name: 'Pack / bundle', detail: 'Plusieurs produits réunis dans une offre', digital: true },
-  { id: 'coaching', name: 'Coaching', detail: 'Accompagnement et séances personnalisées', digital: true },
   { id: 'service', name: 'Service', detail: 'Prestation réalisée pour un client', digital: false },
-  { id: 'community', name: 'Communauté', detail: 'Accès à un espace ou groupe privé', digital: true },
 ];
 const steps = ['Type de produit', 'Présentation', 'Prix et offre', 'Visuels', 'Contenu / livraison', 'Aperçu et publication'];
 
@@ -101,6 +96,8 @@ export default function NewListingPage() {
     if (status === 'published' && sellerStatus !== 'active') { setError('Votre boutique doit être validée avant la publication. Enregistrez ce produit en brouillon en attendant.'); return; }
     if (!form.title.trim() || !form.price || Number(form.price) < 0) { setStep(1); setError('Complétez le titre et le prix avant de continuer.'); return; }
     setSaving(true); setError('');
+    let createdListingId: string | null = null;
+    const uploadedPaths: string[] = [];
     try {
       const slug = form.title.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
       const description = [form.description.trim(), form.delivery_notes.trim() ? 'Informations de livraison / accès :\n' + form.delivery_notes.trim() : ''].filter(Boolean).join('\n\n');
@@ -117,6 +114,7 @@ export default function NewListingPage() {
         listing_status: status, published_at: status === 'published' ? new Date().toISOString() : null,
       }).select('id').single();
       if (listError) throw listError;
+      createdListingId = listing.id;
       if (imageUrls.length) {
         const { error: mediaError } = await supabase.from('marketplace_listing_media').insert(imageUrls.map((url, index) => ({ listing_id: listing.id, url, media_type: 'image', sort_order: index, is_primary: index === 0 })));
         if (mediaError) throw new Error('Produit enregistré, mais les visuels n’ont pas pu être associés : ' + mediaError.message);
@@ -136,7 +134,14 @@ export default function NewListingPage() {
       setSuccess(true);
       window.setTimeout(() => router.push('/marketplace/seller'), 1300);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Le produit n’a pas pu être enregistré.');
+      if (uploadedPaths.length) {
+        await supabase.storage.from('jdv-marketplace-digital').remove(uploadedPaths).catch(() => undefined);
+      }
+      if (createdListingId) {
+        await supabase.from('marketplace_digital_assets').delete().eq('listing_id', createdListingId);
+        await supabase.from('marketplace_listings').delete().eq('id', createdListingId);
+      }
+      setError(err instanceof Error ? err.message : 'Le produit n’a pas pu être enregistré. Les fichiers temporaires ont été nettoyés si possible.');
     } finally { setSaving(false); }
   };
 
