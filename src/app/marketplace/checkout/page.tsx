@@ -57,7 +57,7 @@ export default function CheckoutPage() {
   const [newAddress, setNewAddress] = useState({ label: 'Domicile', full_name: '', phone: '', address_line1: '', city: '' });
 
   useEffect(() => {
-    if (!user) { router.replace('/inscription/marketplace'); return; }
+    if (!user) { router.replace('/marketplace/connexion?mode=register'); return; }
     let active = true;
     void (async () => {
       const { data: marketplaceMembership, error: membershipError } = await supabase
