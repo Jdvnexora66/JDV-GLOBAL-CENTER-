@@ -159,10 +159,10 @@ export default function CreateSellerStorePage() {
               <label className="grid gap-2 text-sm font-semibold">Description de votre activité
                 <textarea rows={5} maxLength={1000} value={form.description} onChange={e=>update('description',e.target.value)} placeholder="Présentez vos produits, votre expertise et ce qui rend votre boutique unique…" className="rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-[#F28C28]"/>
               </label>
-              <div className="grid gap-5 sm:grid-cols-2"><Field label="Téléphone professionnel" value={form.phone} onChange={v=>update('phone',v)} placeholder="+229 …"/><Field label="E-mail de contact" value={form.email} onChange={v=>update('email',v)} placeholder={user?.email || 'contact@exemple.com'} type="email"/></div>
+              <div className="grid gap-5 sm:grid-cols-2"><StoreField label="Téléphone professionnel" value={form.phone} onChange={v=>update('phone',v)} placeholder="+229 …"/><StoreField label="E-mail de contact" value={form.email} onChange={v=>update('email',v)} placeholder={user?.email || 'contact@exemple.com'} type="email"/></div>
             </div>}
             {step === 2 && <div className="grid gap-5">
-              <div className="grid gap-5 sm:grid-cols-2"><Field label="Ville" value={form.city} onChange={v=>update('city',v)} placeholder="Cotonou"/><Field label="Adresse (facultatif)" value={form.address} onChange={v=>update('address',v)} placeholder="Quartier, rue…"/></div>
+              <div className="grid gap-5 sm:grid-cols-2"><StoreField label="Ville" value={form.city} onChange={v=>update('city',v)} placeholder="Cotonou"/><StoreField label="Adresse (facultatif)" value={form.address} onChange={v=>update('address',v)} placeholder="Quartier, rue…"/></div>
               <StoreField label="Site web ou page professionnelle" value={form.website} onChange={v=>update('website',v)} placeholder="https://…"/>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">Les liens vers les réseaux sociaux et les éléments graphiques du profil seront ajoutés dans les paramètres de la boutique après sa création. Ils ne sont pas enregistrés dans des champs non vérifiés de la base actuelle.</div>
             </div>}
