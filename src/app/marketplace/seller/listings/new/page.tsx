@@ -89,6 +89,8 @@ export default function NewListingPage() {
       if (form.compare_at_price && Number(form.compare_at_price) < price) return 'Le prix barré doit être supérieur ou égal au prix de vente.';
     }
     if (step === 3 && imageUrls.some(url => !/^https?:\/\//i.test(url))) return 'Une adresse d’image est invalide.';
+    if (step === 4 && form.type === 'files' && digitalFiles.length === 0) return 'Ajoutez au moins un fichier à livrer à vos acheteurs.';
+    if (digitalFiles.some(file => file.size > 100 * 1024 * 1024)) return 'Chaque fichier doit faire 100 Mo maximum.';
     return '';
   };
   const next = () => { const message = validateStep(); if (message) { setError(message); return; } setError(''); setStep(s => Math.min(s + 1, steps.length - 1)); };
