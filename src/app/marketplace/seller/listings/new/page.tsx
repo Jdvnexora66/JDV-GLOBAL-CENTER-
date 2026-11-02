@@ -125,7 +125,8 @@ export default function NewListingPage() {
           const safeName = file.name.normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-120) || 'fichier';
           const storagePath = user!.id + '/' + listing.id + '/' + crypto.randomUUID() + '-' + safeName;
           const { error: uploadError } = await supabase.storage.from('jdv-marketplace-digital').upload(storagePath, file, { contentType: file.type || 'application/octet-stream', upsert: false });
-          if (uploadError) throw new Error('Produit enregistré, mais le fichier "' + file.name + '" n’a pas été téléversé. Vérifiez que la migration de livraison numérique est appliquée. ' + uploadError.message);
+          if (uploadError) throw new Error('Le fichier "' + file.name + '" n’a pas été téléversé. Vérifiez que la migration de livraison numérique est appliquée. ' + uploadError.message);
+          uploadedPaths.push(storagePath);
           assets.push({ listing_id: listing.id, storage_path: storagePath, file_name: file.name, content_type: file.type || 'application/octet-stream', size_bytes: file.size, uploaded_by: user!.id });
         }
         const { error: assetError } = await supabase.from('marketplace_digital_assets').insert(assets);
