@@ -43,10 +43,11 @@ export default function MarketplacePage() {
  };
  if(loading)return <main className="grid min-h-screen place-items-center bg-[#0B1B3D] text-white">Chargement de JDV Marketplace…</main>;
  return <main className="min-h-screen bg-[#0B1B3D] text-white">
-  <header className="border-b border-white/10 bg-[#08152e]">
-   <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4 sm:px-8">
-    <Link href="/" className="inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-white"><ArrowLeft size={16}/> Accueil JDV</Link>
-    <div className="flex items-center gap-2">
+  <header className="sticky top-0 z-40 border-b border-white/10 bg-[#08152e]/95 backdrop-blur-xl">
+   <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-5 py-3 sm:px-8">
+    <Link href="/marketplace" className="flex shrink-0 items-center gap-2 text-lg font-black tracking-tight"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F28C28] text-[#10213d]"><ShoppingBag size={19}/></span><span>JDV <span className="text-[#F28C28]">MARKETPLACE</span></span></Link>
+    <nav className="hidden items-center gap-5 pl-5 text-sm font-semibold text-white/65 lg:flex"><a href="#catalogue" className="hover:text-white">Acheter</a><a href="#categories" className="hover:text-white">Catégories</a><Link href="/marketplace/seller/create" className="hover:text-white">Devenir vendeur</Link></nav>
+    <div className="ml-auto flex items-center gap-2">
      <Link href={user ? '/applications/marketplace/settings' : '/marketplace/connexion'} className="rounded-xl border border-white/15 px-3 py-2 text-sm hover:border-[#F28C28]/60">{user ? 'Mon espace' : 'Connexion'}</Link>
      <Link href="/marketplace/seller" className="hidden rounded-xl border border-white/15 px-3 py-2 text-sm hover:border-[#F28C28]/60 sm:inline-flex">Espace vendeur</Link>
      <Link href="/marketplace/seller/create" className="inline-flex items-center gap-2 rounded-xl bg-[#F28C28] px-4 py-2.5 text-sm font-bold text-[#10213d] transition hover:bg-[#ffab52]"><Store size={16}/> Ouvrir ma boutique</Link>
@@ -54,44 +55,27 @@ export default function MarketplacePage() {
    </div>
   </header>
   <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 sm:py-10">
-   <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#173967] via-[#102849] to-[#0b1b3d] p-6 sm:p-10">
-    <div className="pointer-events-none absolute -right-12 -top-16 h-64 w-64 rounded-full bg-[#F28C28]/10 blur-3xl"/>
-    <div className="relative grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
+   <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#102b52] via-[#123c68] to-[#0b1b3d] p-6 sm:p-10 lg:p-12">
+    <div className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-[#F28C28]/15 blur-3xl"/>
+    <div className="relative grid gap-10 lg:grid-cols-[1fr_.9fr] lg:items-center">
      <div>
-      <span className="inline-flex items-center gap-2 rounded-full border border-[#F28C28]/30 bg-[#F28C28]/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[.18em] text-[#ffb56f]"><Sparkles size={14}/> Le marché panafricain</span>
-      <h1 className="mt-5 max-w-2xl text-4xl font-black leading-tight sm:text-6xl">Les bonnes affaires <span className="text-[#F28C28]">commencent ici.</span></h1>
-      <p className="mt-4 max-w-xl text-base leading-7 text-white/70 sm:text-lg">Découvrez des produits, rencontrez des vendeurs et développez votre activité. Des créateurs locaux aux fournisseurs professionnels, tout commence par une bonne rencontre.</p>
-      <div className="mt-7 flex flex-wrap gap-3">
-       <a href="#catalogue" className="inline-flex items-center gap-2 rounded-xl bg-[#F28C28] px-5 py-3 font-bold text-[#10213d] transition hover:bg-[#ffab52]">Explorer le marché <ArrowRight size={17}/></a>
-       <Link href="/marketplace/seller/create" className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-5 py-3 font-semibold transition hover:border-white/50 hover:bg-white/5"><Store size={17}/> Vendre sur JDV</Link>
-      </div>
-      <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/60">
-       <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-[#F28C28]"/> Des vendeurs identifiables</span>
-       <span className="inline-flex items-center gap-2"><Truck size={15} className="text-[#F28C28]"/> Livraison à organiser clairement</span>
-      </div>
+      <span className="inline-flex items-center gap-2 rounded-full border border-[#F28C28]/30 bg-[#F28C28]/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.16em] text-[#ffb56f]"><Sparkles size={14}/> Le marché panafricain</span>
+      <h1 className="mt-6 max-w-2xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">Trouvez ce qu’il vous faut. <span className="text-[#F28C28]">Vendez ce que vous créez.</span></h1>
+      <p className="mt-5 max-w-xl text-base leading-7 text-white/70">Des produits, des boutiques et des vendeurs à découvrir. JDV Marketplace rapproche les acheteurs et les commerçants dans un espace clair et accessible.</p>
+      <div className="mt-7 flex flex-wrap gap-3"><a href="#catalogue" className="inline-flex items-center gap-2 rounded-xl bg-[#F28C28] px-5 py-3 font-extrabold text-[#10213d] transition hover:bg-[#ffab52]">Découvrir les offres <ArrowRight size={17}/></a><Link href="/marketplace/seller/create" className="inline-flex items-center gap-2 rounded-xl border border-white/25 px-5 py-3 font-bold transition hover:bg-white/10"><Store size={17}/> Créer ma boutique</Link></div>
+      <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-white/60"><span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-[#F28C28]"/> Informations vendeur visibles</span><span className="inline-flex items-center gap-2"><Truck size={15} className="text-[#F28C28]"/> Livraison à confirmer clairement</span></div>
      </div>
-     <div className="grid grid-cols-2 gap-3">
-      <div className="rounded-2xl border border-white/10 bg-white/[.07] p-5">
-       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F28C28]/15 text-[#ffb56f]"><ShoppingBag size={22}/></div>
-       <p className="text-lg font-bold">Acheter malin</p><p className="mt-2 text-sm leading-6 text-white/60">Comparez les offres et enregistrez vos favoris.</p>
-      </div>
-      <div className="mt-7 rounded-2xl border border-white/10 bg-white/[.07] p-5">
-       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F28C28]/15 text-[#ffb56f]"><Store size={22}/></div>
-       <p className="text-lg font-bold">Créer sa boutique</p><p className="mt-2 text-sm leading-6 text-white/60">Présentez vos produits et votre savoir-faire.</p>
-      </div>
-      <div className="rounded-2xl border border-white/10 bg-white/[.07] p-5">
-       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F28C28]/15 text-[#ffb56f]"><TrendingUp size={22}/></div>
-       <p className="text-lg font-bold">Grandir ensemble</p><p className="mt-2 text-sm leading-6 text-white/60">Préparez votre activité à de nouveaux marchés.</p>
-      </div>
-      <div className="mt-7 rounded-2xl border border-white/10 bg-white/[.07] p-5">
-       <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-[#F28C28]/15 text-[#ffb56f]"><BadgeCheck size={22}/></div>
-       <p className="text-lg font-bold">La confiance d'abord</p><p className="mt-2 text-sm leading-6 text-white/60">Des informations claires avant de commander.</p>
-      </div>
+     <div className="rounded-[1.75rem] border border-white/15 bg-[#07162f]/70 p-4 shadow-2xl backdrop-blur sm:p-5">
+      <div className="flex items-center justify-between gap-3 px-1 pb-4"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#ffb56f]">À découvrir</p><h2 className="mt-1 text-lg font-extrabold">Sélection du marché</h2></div><span className="rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white/70">{listings.length} offres</span></div>
+      {listings.slice(0,2).length>0 ? <div className="grid gap-3 sm:grid-cols-2">{listings.slice(0,2).map(item=><Link key={item.id} href={'/marketplace/product/'+item.id} className="rounded-2xl border border-white/10 bg-white/[.06] p-4 transition hover:border-[#F28C28]/50"><span className="flex h-24 items-center justify-center rounded-xl bg-gradient-to-br from-white/10 to-white/[.02] text-[#ffb56f]"><ShoppingBag size={32}/></span><p className="mt-3 line-clamp-1 font-bold">{item.title}</p><p className="mt-1 text-sm font-extrabold text-[#ffb56f]">{money(item.price,item.currency_id)}</p><span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-white/60">Voir l’offre <ArrowRight size={13}/></span></Link>)}</div> : <div className="rounded-2xl border border-dashed border-white/20 bg-white/[.03] p-6 text-center"><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#F28C28]/10 text-[#ffb56f]"><Store size={22}/></span><p className="mt-3 font-bold">Votre première vitrine commence ici.</p><p className="mt-1 text-sm text-white/55">Ouvrez une boutique et publiez vos premières offres.</p><Link href="/marketplace/seller/create" className="mt-4 inline-flex rounded-xl bg-[#F28C28] px-4 py-2.5 text-sm font-bold text-[#10213d]">Créer ma boutique</Link></div>}
      </div>
     </div>
-   </section>
-   <section className="mt-8 grid gap-3 sm:grid-cols-3">
+   </section>   <section className="mt-8 grid gap-3 sm:grid-cols-3">
     {[{title:'Produits et créations',description:'Des offres publiées par les vendeurs',icon:ShoppingBag},{title:'Boutiques indépendantes',description:'Un espace pour chaque commerçant',icon:Store},{title:'Commerce professionnel',description:'Préparez vos demandes de volume et de devis',icon:TrendingUp}].map(({title,description,icon:Icon})=><div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[.04] p-4"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[.07] text-[#F28C28]"><Icon size={19}/></div><div><h2 className="font-bold">{title}</h2><p className="mt-1 text-sm text-white/55">{description}</p></div></div>)}
+   </section>
+   <section id="categories" className="mt-10 scroll-mt-6">
+    <div className="mb-4"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#F28C28]">Parcourir le marché</p><h2 className="mt-2 text-2xl font-black">Explorer par catégorie</h2></div>
+    {categories.length>0 ? <div className="flex gap-2 overflow-x-auto pb-2">{categories.map(c=><button key={c.id} onClick={()=>setCategoryId(old=>old===c.id?'':c.id)} className={'shrink-0 rounded-full border px-4 py-2.5 text-sm font-semibold transition '+(categoryId===c.id?'border-[#F28C28] bg-[#F28C28] text-[#10213d]':'border-white/10 bg-white/[.04] text-white/70 hover:border-white/30')}>{c.name}</button>)}</div> : <p className="text-sm text-white/50">Les catégories disponibles apparaîtront ici.</p>}
    </section>
    <section id="catalogue" className="mt-12 scroll-mt-6">
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
