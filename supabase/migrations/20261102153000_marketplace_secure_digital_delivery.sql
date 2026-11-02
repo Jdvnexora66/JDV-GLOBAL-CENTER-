@@ -19,7 +19,6 @@ create index if not exists marketplace_digital_assets_listing_idx
 alter table public.marketplace_digital_assets enable row level security;
 grant select, insert, delete on public.marketplace_digital_assets to authenticated;
 
-drop policy if exists marketplace_digital_assets_seller_read on public.marketplace_digital_assets;
 create policy marketplace_digital_assets_seller_read
 on public.marketplace_digital_assets for select to authenticated
 using (
@@ -37,7 +36,6 @@ using (
   )
 );
 
-drop policy if exists marketplace_digital_assets_seller_insert on public.marketplace_digital_assets;
 create policy marketplace_digital_assets_seller_insert
 on public.marketplace_digital_assets for insert to authenticated
 with check (
@@ -50,7 +48,6 @@ with check (
   )
 );
 
-drop policy if exists marketplace_digital_assets_seller_delete on public.marketplace_digital_assets;
 create policy marketplace_digital_assets_seller_delete
 on public.marketplace_digital_assets for delete to authenticated
 using (
@@ -84,12 +81,8 @@ values (
     'video/webm'
   ]
 )
-on conflict (id) do update
-set public = false,
-    file_size_limit = excluded.file_size_limit,
-    allowed_mime_types = excluded.allowed_mime_types;
+on conflict (id) do nothing;
 
-drop policy if exists jdv_marketplace_digital_upload_own_listing on storage.objects;
 create policy jdv_marketplace_digital_upload_own_listing
 on storage.objects for insert to authenticated
 with check (
@@ -104,7 +97,6 @@ with check (
   )
 );
 
-drop policy if exists jdv_marketplace_digital_read_entitled on storage.objects;
 create policy jdv_marketplace_digital_read_entitled
 on storage.objects for select to authenticated
 using (
@@ -131,7 +123,6 @@ using (
   )
 );
 
-drop policy if exists jdv_marketplace_digital_delete_own_listing on storage.objects;
 create policy jdv_marketplace_digital_delete_own_listing
 on storage.objects for delete to authenticated
 using (
