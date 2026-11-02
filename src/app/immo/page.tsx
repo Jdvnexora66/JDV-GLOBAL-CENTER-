@@ -12,7 +12,7 @@ type ActivityItem = {id:string;title:string;detail:string;at:string;kind:'proper
 const nav = [
   {label:'Biens immobiliers',href:'/immo/biens',icon:Home},{label:'Agences',href:'/immo/partenaires',icon:Building2},
   {label:'Agents',href:'/immo/partenaires',icon:Users},{label:'Projets',href:'/immo/construction',icon:BriefcaseBusiness},
-  {label:'Réservations',href:'/immo/reservations',icon:CalendarDays},{label:'Clients',href:'/immo/locataires',icon:Users},
+  {label:'Réservations',href:'/immo/reservations',icon:CalendarDays},{label:'Locataires & baux',href:'/immo/locataires',icon:Users},
 ];
 const extras = [
   {label:'Gestion globale',href:'/immo/gestion',icon:ClipboardList},{label:'Marketing & Croissance',href:'/immo/partenaires',icon:ChartNoAxesCombined},
@@ -101,7 +101,7 @@ export default function ImmoPage() {
           {[
             {label:'Biens immobiliers',value:metrics.properties,detail:'Biens publiés',icon:Home,color:'bg-blue-600',border:'border-blue-100'},
             {label:'Réservations ce mois',value:metrics.reservations,detail:'Total enregistré',icon:CalendarDays,color:'bg-emerald-500',border:'border-emerald-100'},
-            {label:'Clients identifiés',value:metrics.clients,detail:'Dossiers récents consultés',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
+            {label:'Demandeurs IMO',value:metrics.clients,detail:'Comptes sur les dossiers récents',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
             {label:'Agences partenaires',value:metrics.agencies,detail:'Agences enregistrées',icon:Handshake,color:'bg-orange-500',border:'border-orange-100'},
           ].map(({label,value,detail,icon:Icon,color,border})=><div key={label} className={'flex min-h-[96px] items-center gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm '+border}><div className={'grid h-14 w-14 shrink-0 place-items-center rounded-full text-white shadow-lg '+color}><Icon size={27}/></div><div className="min-w-0"><div className="text-sm font-bold">{label}</div><div className="mt-1 text-2xl font-black tabular-nums">{busy?'—':number(value)}</div><div className="text-[10px] text-slate-500">{detail}</div></div></div>)}
         </section>
