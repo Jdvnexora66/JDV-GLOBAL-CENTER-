@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, Bell, Menu, X, ShieldCheck, SlidersHorizontal, Home, Compass, ShoppingBag, CircleHelp } from 'lucide-react';
+import { ArrowRight, Bell, Menu, X, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -46,19 +46,6 @@ export default function GlobalHeader() {
           {!loading && <Link href={user ? workspaceHref : '/auth/login'} onClick={() => setMobileOpen(false)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-extrabold text-black">{user ? 'Mon espace' : 'Connexion'}<ArrowRight size={15}/></Link>}
         </div>
       </nav>}
-      <nav aria-label="Navigation rapide mobile" className="fixed inset-x-0 bottom-0 z-[60] grid grid-cols-4 border-t border-border bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,.10)] backdrop-blur-xl lg:hidden">
-        {[
-          { href: '/', label: 'Accueil', Icon: Home },
-          { href: '/univers', label: 'Univers', Icon: Compass },
-          { href: '/marketplace', label: 'Boutique', Icon: ShoppingBag },
-          { href: '/help', label: 'Aide', Icon: CircleHelp },
-        ].map(({ href, label, Icon }) => (
-          <Link key={href} href={href} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground">
-            <Icon size={19} strokeWidth={2.1}/>
-            <span>{label}</span>
-          </Link>
-        ))}
-      </nav>
     </header>
   );
 }
