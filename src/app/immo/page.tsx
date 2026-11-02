@@ -28,14 +28,14 @@ export default function ImmoPage() {
   const [menuOpen,setMenuOpen]=useState(false),[search,setSearch]=useState(''),[busy,setBusy]=useState(true),[error,setError]=useState('');
   const [properties,setProperties]=useState<Property[]>([]),[projects,setProjects]=useState<Project[]>([]),[activities,setActivities]=useState<ActivityItem[]>([]);
   const [typeNames,setTypeNames]=useState<Record<string,string>>({});
-  const [metrics,setMetrics]=useState({properties:0,reservations:0,clients:0,agencies:0,appointments:0});
+  const [metrics,setMetrics]=useState({properties:0,reservations:0,requests:0,agencies:0,appointments:0});
   const [period,setPeriod]=useState<'7j'|'30j'|'90j'|'1an'>('30j');
   const [series,setSeries]=useState<Array<{label:string;properties:number;reservations:number;visits:number}>>([]);
 
   const load=useCallback(async()=>{
     setBusy(true);setError('');
     const monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
-    const [pc,rc,ac,vc,pr,proj,rr,ar,req,tr]=await Promise.all([
+    const [pc,rc,ac,vc,pr,proj,rr,ar,req,reqCount,tr]=await Promise.all([
       supabase.from('immo_properties').select('id',{count:'exact',head:true}).eq('property_status','published'),
       supabase.from('immo_reservations').select('id',{count:'exact',head:true}).gte('created_at',monthStart.toISOString()),
       supabase.from('immo_agencies').select('id',{count:'exact',head:true}),
@@ -45,18 +45,22 @@ export default function ImmoPage() {
       supabase.from('immo_reservations').select('id,client_user_id,reservation_status,created_at').order('created_at',{ascending:false}).limit(500),
       supabase.from('immo_appointments').select('id,scheduled_at,appointment_status,created_at').order('created_at',{ascending:false}).limit(500),
       supabase.from('immo_requests').select('id,requester_user_id,created_at').order('created_at',{ascending:false}).limit(500),
+      supabase.from('immo_requests').select('id',{count:'exact',head:true}),
       supabase.from('immo_property_types').select('id,name').eq('is_active',true),
     ]);
-    if(pr.error)setError(pr.error.message);
+    if(pc.error)setError(pc.error.message);
+    if(rc.error)setError(v=>v||rc.error!.message);
+    if(ac.error)setError(v=>v||ac.error!.message);
+    if(vc.error)setError(v=>v||vc.error!.message);
+    if(pr.error)setError(v=>v||pr.error!.message);
     if(proj.error)setError(v=>v||proj.error!.message);
     if(rr.error)setError(v=>v||rr.error!.message);
     if(ar.error)setError(v=>v||ar.error!.message);
+    if(req.error)setError(v=>v||req.error!.message);
+    if(reqCount.error)setError(v=>v||reqCount.error!.message);
     const p=(pr.data??[]) as Property[], projectsData=(proj.data??[]) as Project[], reservations=rr.data??[], appointments=ar.data??[], requests=req.data??[];
     setProperties(p);setProjects(projectsData);
-    const clients=new Set<string>();
-    reservations.forEach((r:any)=>{if(r.client_user_id)clients.add(r.client_user_id);});
-    requests.forEach((r:any)=>{if(r.requester_user_id)clients.add(r.requester_user_id);});
-    setMetrics({properties:pc.count??0,reservations:rc.count??0,clients:clients.size,agencies:ac.count??0,appointments:vc.count??0});
+    setMetrics({properties:pc.count??0,reservations:rc.count??0,requests:reqCount.count??0,agencies:ac.count??0,appointments:vc.count??0});
     const names:Record<string,string>={};(tr.data??[]).forEach((r:any)=>{names[r.id]=r.name;});setTypeNames(names);
     const feed:ActivityItem[]=[
       ...p.slice(0,12).map(r=>({id:'p'+r.id,title:'Nouveau bien ajouté',detail:r.title+(r.city?' · '+r.city:''),at:r.created_at,kind:'property' as const})),
@@ -91,7 +95,7 @@ export default function ImmoPage() {
     </aside>
     <main className="min-w-0 flex-1">
       <header className="sticky top-0 z-30 flex h-[70px] items-center gap-4 bg-[#082653] px-4 text-white shadow-md sm:px-7"><button onClick={()=>setMenuOpen(true)} className="rounded-lg p-2 hover:bg-white/10 lg:hidden"><Menu size={22}/></button><div className="hidden rounded-lg p-2 lg:block"><Menu size={22}/></div>
-        <form onSubmit={e=>{e.preventDefault();window.location.href='/immo/biens';}} className="flex h-11 max-w-[580px] flex-1 items-center gap-3 rounded-2xl bg-white/10 px-4"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un bien, un client, une agence..." className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-blue-100/80"/></form>
+        <form onSubmit={e=>{e.preventDefault();window.location.href='/immo/biens'+(search.trim()?'?q='+encodeURIComponent(search.trim()):'');}} className="flex h-11 max-w-[580px] flex-1 items-center gap-3 rounded-2xl bg-white/10 px-4"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un bien, un client, une agence..." className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-blue-100/80"/></form>
         <div className="ml-auto flex items-center gap-2 sm:gap-5"><button className="hidden items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm font-semibold sm:flex"><Globe2 size={19}/> Français <ChevronDown size={14}/></button><Link href="/notifications" className="relative rounded-full p-2 hover:bg-white/10"><Bell size={21}/><span className="absolute right-0 top-0 grid h-5 w-5 place-items-center rounded-full bg-[#ef2448] text-[10px] font-bold">3</span></Link><Link href="/settings" className="rounded-full p-2 hover:bg-white/10"><Settings size={21}/></Link><button onClick={async()=>{await supabase.auth.signOut();window.location.href='/immo';}} className="rounded-full p-2 hover:bg-white/10" aria-label="Déconnexion"><LogOut size={21}/></button></div>
       </header>
       <div className="p-3 sm:p-5 lg:p-4">
@@ -101,7 +105,7 @@ export default function ImmoPage() {
           {[
             {label:'Biens immobiliers',value:metrics.properties,detail:'Biens publiés',icon:Home,color:'bg-blue-600',border:'border-blue-100'},
             {label:'Réservations ce mois',value:metrics.reservations,detail:'Total enregistré',icon:CalendarDays,color:'bg-emerald-500',border:'border-emerald-100'},
-            {label:'Clients identifiés',value:metrics.clients,detail:'Dossiers récents consultés',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
+            {label:'Demandes clients',value:metrics.requests,detail:'Demandes enregistrées',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
             {label:'Agences partenaires',value:metrics.agencies,detail:'Agences enregistrées',icon:Handshake,color:'bg-orange-500',border:'border-orange-100'},
           ].map(({label,value,detail,icon:Icon,color,border})=><div key={label} className={'flex min-h-[96px] items-center gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm '+border}><div className={'grid h-14 w-14 shrink-0 place-items-center rounded-full text-white shadow-lg '+color}><Icon size={27}/></div><div className="min-w-0"><div className="text-sm font-bold">{label}</div><div className="mt-1 text-2xl font-black tabular-nums">{busy?'—':number(value)}</div><div className="text-[10px] text-slate-500">{detail}</div></div></div>)}
         </section>
