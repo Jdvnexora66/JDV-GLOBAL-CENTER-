@@ -10,6 +10,14 @@ import { createClient } from '@/lib/supabase/client';
 type Country = { id: string; name: string; iso_code: string };
 const slugify = (value: string) => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+function StoreField({ label, value, onChange, placeholder, required = false, type = 'text' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; required?: boolean; type?: string }) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-[#17233d]">{label}{required && ' *'}
+      <input type={type} required={required} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="min-h-12 rounded-xl border border-slate-200 bg-white px-4 font-normal outline-none transition focus:border-[#F28C28] focus:ring-2 focus:ring-[#F28C28]/15" />
+    </label>
+  );
+}
+
 const stages = [
   { title: 'Identité de la boutique', detail: 'Donnez un nom à votre espace de vente.', icon: Store },
   { title: 'Présentation', detail: 'Expliquez votre activité et comment vous joindre.', icon: UserRound },
@@ -22,6 +30,8 @@ export default function CreateSellerStorePage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState(true);
+  const [countryError, setCountryError] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState(0);
@@ -40,14 +50,15 @@ export default function CreateSellerStorePage() {
         supabase.from('countries').select('id,name,iso_code').eq('is_active', true).order('name')
       ]);
       if (!active) return;
+      if (countryResult.error) setCountryError('Impossible de charger les pays : ' + countryResult.error.message);
+      else setCountries((countryResult.data || []) as Country[]);
+      setCountriesLoading(false);
       if (membershipResult.error || !membershipResult.data || membershipResult.data.status !== 'active') {
         setError('Votre accès Marketplace n’est pas encore activé. Connectez-vous ou terminez votre inscription dédiée à JDV Marketplace.');
         setLoading(false);
         return;
       }
       if (sellerResult.data) { router.replace('/marketplace/seller'); return; }
-      if (countryResult.error) setError('Impossible de charger la liste des pays. Réessayez.');
-      else setCountries((countryResult.data || []) as Country[]);
       setLoading(false);
     })();
     return () => { active = false; };
@@ -56,7 +67,7 @@ export default function CreateSellerStorePage() {
   const update = (key: keyof typeof form, value: string) => setForm(old => ({ ...old, [key]: value }));
   const next = () => {
     setError('');
-    if (step === 0 && (form.shop_name.trim().length < 3 || !form.country_id)) {
+    if (step === 0 && (form.shop_name.trim().length < 3 || !form.country_id || !countries.some(country => country.id === form.country_id))) {
       setError('Indiquez un nom de boutique (3 caractères minimum) et choisissez votre pays.');
       return;
     }
@@ -72,7 +83,7 @@ export default function CreateSellerStorePage() {
     if (!user || saving) return;
     const name = form.shop_name.trim();
     const slug = slugify(name);
-    if (name.length < 3 || !slug || !form.country_id) {
+    if (name.length < 3 || !slug || !form.country_id || !countries.some(country => country.id === form.country_id)) {
       setStep(0);
       setError('Le nom de la boutique et le pays sont obligatoires.');
       return;
@@ -102,12 +113,6 @@ export default function CreateSellerStorePage() {
   };
 
   if (authLoading || loading) return <main className="grid min-h-screen place-items-center bg-[#f5f7fb] text-[#0B1B3D]"><Loader2 className="animate-spin" size={30} /></main>;
-
-  const Field = ({ label, value, onChange, placeholder, required = false, type = 'text' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; required?: boolean; type?: string }) => (
-    <label className="grid gap-2 text-sm font-semibold text-[#17233d]">{label}{required && ' *'}
-      <input type={type} required={required} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="min-h-12 rounded-xl border border-slate-200 bg-white px-4 font-normal outline-none transition focus:border-[#F28C28] focus:ring-2 focus:ring-[#F28C28]/15" />
-    </label>
-  );
 
   return <main className="min-h-screen bg-[#f5f7fb] px-4 py-8 text-[#0B1B3D] sm:px-6">
     <div className="mx-auto max-w-5xl">
@@ -142,9 +147,11 @@ export default function CreateSellerStorePage() {
 
           <form onSubmit={submit}>
             {step === 0 && <div className="grid gap-5">
-              <Field label="Nom de la boutique" value={form.shop_name} onChange={v=>update('shop_name',v)} placeholder="Ex. Les créations de Marie" required/>
+              <StoreField label="Nom de la boutique" value={form.shop_name} onChange={v=>update('shop_name',v)} placeholder="Ex. Les créations de Marie" required/>
               <label className="grid gap-2 text-sm font-semibold">Pays d’activité *
-                <select required value={form.country_id} onChange={e=>update('country_id',e.target.value)} className="min-h-12 rounded-xl border border-slate-200 bg-white px-4 font-normal outline-none focus:border-[#F28C28]"><option value="">Sélectionner votre pays</option>{countries.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+                <select required disabled={countriesLoading || Boolean(countryError) || countries.length === 0} value={form.country_id} onChange={e=>update('country_id',e.target.value)} className="min-h-12 rounded-xl border border-slate-200 bg-white px-4 font-normal outline-none focus:border-[#F28C28]"><option value="">{countriesLoading ? 'Chargement des pays…' : countries.length ? 'Sélectionner votre pays' : 'Aucun pays disponible'}</option>{countries.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>
+              {countryError && <span role="alert" className="text-xs font-medium text-red-600">{countryError}</span>}
+              {!countriesLoading && !countryError && countries.length === 0 && <span role="alert" className="text-xs text-red-600">La liste des pays est vide. Vérifiez les pays actifs et les autorisations de lecture.</span>}
               </label>
               <p className="text-xs leading-5 text-slate-500">Le nom servira à identifier votre boutique. Son adresse JDV sera générée automatiquement.</p>
             </div>}
@@ -156,7 +163,7 @@ export default function CreateSellerStorePage() {
             </div>}
             {step === 2 && <div className="grid gap-5">
               <div className="grid gap-5 sm:grid-cols-2"><Field label="Ville" value={form.city} onChange={v=>update('city',v)} placeholder="Cotonou"/><Field label="Adresse (facultatif)" value={form.address} onChange={v=>update('address',v)} placeholder="Quartier, rue…"/></div>
-              <Field label="Site web ou page professionnelle" value={form.website} onChange={v=>update('website',v)} placeholder="https://…"/>
+              <StoreField label="Site web ou page professionnelle" value={form.website} onChange={v=>update('website',v)} placeholder="https://…"/>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">Les liens vers les réseaux sociaux et les éléments graphiques du profil seront ajoutés dans les paramètres de la boutique après sa création. Ils ne sont pas enregistrés dans des champs non vérifiés de la base actuelle.</div>
             </div>}
             {step === 3 && <div className="space-y-5">
