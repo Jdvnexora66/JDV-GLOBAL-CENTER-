@@ -67,15 +67,15 @@ export type JDVModuleGroup = {
  * découverte sont unifiés ici.
  */
 export const JDV_MODULE_GROUPS: JDVModuleGroup[] = [
-  { id: 'finance-protection', title: 'Finance & Protection', description: 'Paiements, épargne collective, assurance et comptabilité.', accent: '#2DD4BF', moduleIds: ['pay', 'tontine', 'insurance', 'accounting'] },
-  { id: 'immo-patrimoine', title: 'Immobilier & Patrimoine', description: 'Biens, recherche immobilière, visites et projets de construction.', accent: '#FBBF24', moduleIds: ['immo'] },
-  { id: 'entreprises-services', title: 'Entreprises & Services', description: 'Outils de gestion, commerce, clientèle, services et opérations professionnelles.', accent: '#34D399', moduleIds: ['business', 'marketplace', 'crm', 'services', 'legal', 'admin', 'procurement', 'inventory', 'ai', 'hr'] },
-  { id: 'mobilite-logistique', title: 'Mobilité & Logistique', description: 'Voyages, transport et transit dans des parcours dédiés.', accent: '#60A5FA', moduleIds: ['travel', 'transport', 'transit'] },
-  { id: 'sante-bien-etre', title: 'Santé & Bien-être', description: 'Services de santé et parcours de prise de rendez-vous.', accent: '#F472B6', moduleIds: ['health'] },
-  { id: 'social-communaute', title: 'Social & Communauté', description: 'Réseaux, groupes et événements communautaires.', accent: '#A78BFA', moduleIds: ['social', 'community', 'events'] },
-  { id: 'medias-divertissement', title: 'Médias & Divertissement', description: 'Médias, publicité, créateurs et expériences culturelles.', accent: '#FB7185', moduleIds: ['media', 'pub', 'entertainment'] },
-  { id: 'formation-carriere', title: 'Formation & Carrière', description: 'Apprentissage, formation et opportunités professionnelles.', accent: '#818CF8', moduleIds: ['academy', 'jobs'] },
-  { id: 'agriculture-energie', title: 'Agriculture & Énergie', description: 'Production agricole, commercialisation et services énergétiques.', accent: '#84CC16', moduleIds: ['agriculture', 'energy'] },
+  { id: 'immo', title: 'JDV Immo', description: 'Immobilier, biens, recherches et projets de construction.', accent: '#FBBF24', moduleIds: ['immo'] },
+  { id: 'sante', title: 'JDV Santé', description: 'Médecins, pharmacies, laboratoires et services de santé.', accent: '#22C55E', moduleIds: ['health'] },
+  { id: 'academy', title: 'JDV Academy', description: 'Formation, apprentissage et parcours pédagogiques.', accent: '#818CF8', moduleIds: ['academy'] },
+  { id: 'social', title: 'JDV Social', description: 'Réseau social, communautés et événements.', accent: '#A78BFA', moduleIds: ['social', 'community', 'events'] },
+  { id: 'travel', title: 'JDV Travel', description: 'Voyages, transport, transit et mobilité.', accent: '#60A5FA', moduleIds: ['travel', 'transport', 'transit'] },
+  { id: 'marketplace', title: 'JDV Marketplace', description: 'Boutique, produits et vente en ligne.', accent: '#F59E0B', moduleIds: ['marketplace'] },
+  { id: 'services', title: 'JDV Services', description: 'Prestations, entreprises, clientèle et outils professionnels.', accent: '#34D399', moduleIds: ['services', 'business', 'crm', 'jobs', 'legal', 'admin', 'procurement', 'inventory', 'hr', 'ai'] },
+  { id: 'tontine', title: 'JDV Tontine', description: 'Épargne collective, groupes et cotisations.', accent: '#14B8A6', moduleIds: ['tontine'] },
+  { id: 'finance', title: 'JDV Finance', description: 'Paiements, assurance et comptabilité.', accent: '#2DD4BF', moduleIds: ['pay', 'insurance', 'accounting'] },
 ];
 
 export const getGroupedJDVModules = () => {
