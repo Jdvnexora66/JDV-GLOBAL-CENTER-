@@ -94,11 +94,7 @@ export default function ImmoPage() {
     </aside>
     <main className="min-w-0 flex-1">
       <header className="sticky top-0 z-30 flex h-[70px] items-center gap-4 bg-[#082653] px-4 text-white shadow-md sm:px-7"><button onClick={()=>setMenuOpen(true)} className="rounded-lg p-2 hover:bg-white/10 lg:hidden"><Menu size={22}/></button><div className="hidden rounded-lg p-2 lg:block"><Menu size={22}/></div>
- fix/jdv-immo-dashboard-data-search-2026-11-02
-        <form onSubmit={e=>{e.preventDefault();window.location.href='/immo/biens'+(search.trim()?'?q='+encodeURIComponent(search.trim()):'');}} className="flex h-11 max-w-[580px] flex-1 items-center gap-3 rounded-2xl bg-white/10 px-4"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un bien, un client, une agence..." className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-blue-100/80"/></form>
-=======
         <form onSubmit={e=>{e.preventDefault();window.location.href='/immo/biens?q='+encodeURIComponent(search.trim());}} className="flex h-11 max-w-[580px] flex-1 items-center gap-3 rounded-2xl bg-white/10 px-4"><Search size={20}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un bien, un client, une agence..." className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-blue-100/80"/></form>
- supabase-sync-2026-09-24
         <div className="ml-auto flex items-center gap-2 sm:gap-5"><button className="hidden items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm font-semibold sm:flex"><Globe2 size={19}/> Français <ChevronDown size={14}/></button><Link href="/notifications" className="relative rounded-full p-2 hover:bg-white/10"><Bell size={21}/><span className="absolute right-0 top-0 grid h-5 w-5 place-items-center rounded-full bg-[#ef2448] text-[10px] font-bold">3</span></Link><Link href="/settings" className="rounded-full p-2 hover:bg-white/10"><Settings size={21}/></Link><button onClick={async()=>{await supabase.auth.signOut();window.location.href='/immo';}} className="rounded-full p-2 hover:bg-white/10" aria-label="Déconnexion"><LogOut size={21}/></button></div>
       </header>
       <div className="p-3 sm:p-5 lg:p-4">
@@ -108,11 +104,7 @@ export default function ImmoPage() {
           {[
             {label:'Biens immobiliers',value:metrics.properties,detail:'Biens publiés',icon:Home,color:'bg-blue-600',border:'border-blue-100'},
             {label:'Réservations ce mois',value:metrics.reservations,detail:'Total enregistré',icon:CalendarDays,color:'bg-emerald-500',border:'border-emerald-100'},
- fix/jdv-immo-dashboard-data-search-2026-11-02
             {label:'Demandes clients',value:metrics.requests,detail:'Demandes enregistrées',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
-=======
-            {label:'Demandeurs IMO',value:metrics.clients,detail:'Comptes sur les dossiers récents',icon:Users,color:'bg-violet-600',border:'border-violet-100'},
- supabase-sync-2026-09-24
             {label:'Agences partenaires',value:metrics.agencies,detail:'Agences enregistrées',icon:Handshake,color:'bg-orange-500',border:'border-orange-100'},
           ].map(({label,value,detail,icon:Icon,color,border})=><div key={label} className={'flex min-h-[96px] items-center gap-4 rounded-xl border bg-white px-4 py-4 shadow-sm '+border}><div className={'grid h-14 w-14 shrink-0 place-items-center rounded-full text-white shadow-lg '+color}><Icon size={27}/></div><div className="min-w-0"><div className="text-sm font-bold">{label}</div><div className="mt-1 text-2xl font-black tabular-nums">{busy?'—':number(value)}</div><div className="text-[10px] text-slate-500">{detail}</div></div></div>)}
         </section>
