@@ -85,14 +85,10 @@ export default function ImmoPage() {
     setBusy(false);
   }, [supabase, user, typeFilter, transactionFilter, countryFilter, cityFilter, minPrice, maxPrice, minBedrooms, minSurface, furnishedFilter, query]);
 
- fix/jdv-immo-dashboard-data-search-2026-11-02
   useEffect(() => {
     const initialQuery = new URLSearchParams(window.location.search).get('q');
     if (initialQuery) setQuery(initialQuery);
   }, []);
-=======
-  useEffect(() => { const initialQuery = new URLSearchParams(window.location.search).get('q'); if (initialQuery) setQuery(initialQuery); }, []);
- supabase-sync-2026-09-24
 
   useEffect(() => { if (!loading) void load(); }, [loading, load]);
 
