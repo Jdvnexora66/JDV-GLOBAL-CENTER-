@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, BookOpen, BriefcaseBusiness, FileText, GraduationCap, Layers3, Package, Store, Wrench, CheckCircle2 } from 'lucide-react';
 import LoginForm from '@/app/sign-up-login-screen/components/LoginForm';
@@ -18,6 +18,7 @@ const offers = [
 
 export default function MarketplaceConnexionPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  useEffect(() => { if (new URLSearchParams(window.location.search).get('mode') === 'register') setMode('register'); }, []);
   const registering = mode === 'register';
 
   return (
