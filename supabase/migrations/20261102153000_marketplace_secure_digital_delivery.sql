@@ -98,7 +98,7 @@ with check (
   and exists (
     select 1 from public.marketplace_listings l
     join public.marketplace_sellers s on s.id = l.seller_id
-    where l.id = ((storage.foldername(name))[2])::uuid
+    where l.id::text = (storage.foldername(name))[2]
       and s.user_id = (select auth.uid())
       and l.is_digital = true
   )
