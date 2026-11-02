@@ -35,7 +35,7 @@ export default function ImmoPage() {
   const load=useCallback(async()=>{
     setBusy(true);setError('');
     const monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
-    const [pc,rc,ac,vc,pr,proj,rr,ar,req,reqCount,tr]=await Promise.all([
+    const [pc,rc,ac,vc,pr,proj,rr,ar,reqCount,tr]=await Promise.all([
       supabase.from('immo_properties').select('id',{count:'exact',head:true}).eq('property_status','published'),
       supabase.from('immo_reservations').select('id',{count:'exact',head:true}).gte('created_at',monthStart.toISOString()),
       supabase.from('immo_agencies').select('id',{count:'exact',head:true}),
@@ -44,7 +44,6 @@ export default function ImmoPage() {
       supabase.from('immo_projects').select('id,name,city,project_status,price_from,created_at').order('created_at',{ascending:false}).limit(6),
       supabase.from('immo_reservations').select('id,client_user_id,reservation_status,created_at').order('created_at',{ascending:false}).limit(500),
       supabase.from('immo_appointments').select('id,scheduled_at,appointment_status,created_at').order('created_at',{ascending:false}).limit(500),
-      supabase.from('immo_requests').select('id,requester_user_id,created_at').order('created_at',{ascending:false}).limit(500),
       supabase.from('immo_requests').select('id',{count:'exact',head:true}),
       supabase.from('immo_property_types').select('id,name').eq('is_active',true),
     ]);
@@ -56,9 +55,8 @@ export default function ImmoPage() {
     if(proj.error)setError(v=>v||proj.error!.message);
     if(rr.error)setError(v=>v||rr.error!.message);
     if(ar.error)setError(v=>v||ar.error!.message);
-    if(req.error)setError(v=>v||req.error!.message);
     if(reqCount.error)setError(v=>v||reqCount.error!.message);
-    const p=(pr.data??[]) as Property[], projectsData=(proj.data??[]) as Project[], reservations=rr.data??[], appointments=ar.data??[], requests=req.data??[];
+    const p=(pr.data??[]) as Property[], projectsData=(proj.data??[]) as Project[], reservations=rr.data??[], appointments=ar.data??[];
     setProperties(p);setProjects(projectsData);
     setMetrics({properties:pc.count??0,reservations:rc.count??0,requests:reqCount.count??0,agencies:ac.count??0,appointments:vc.count??0});
     const names:Record<string,string>={};(tr.data??[]).forEach((r:any)=>{names[r.id]=r.name;});setTypeNames(names);
@@ -68,11 +66,12 @@ export default function ImmoPage() {
       ...appointments.slice(0,12).map((r:any)=>({id:'a'+r.id,title:'Visite immobilière',detail:r.appointment_status==='confirmed'?'Visite confirmée':'Demande de visite',at:r.created_at,kind:'appointment' as const})),
     ].filter(x=>x.at).sort((a,b)=>new Date(b.at).getTime()-new Date(a.at).getTime()).slice(0,5);
     setActivities(feed);
+    const publishedProperties=p.filter(row=>row.property_status==='published');
     const span=period==='7j'?7:period==='30j'?30:period==='90j'?90:365, n=period==='7j'?7:period==='30j'?10:12, now=new Date();
     setSeries(Array.from({length:n},(_,i)=>{
       const d=new Date(now);d.setDate(now.getDate()-span+1+Math.round(i*(span-1)/(n-1)));const start=new Date(d);start.setHours(0,0,0,0);const end=new Date(start);end.setDate(end.getDate()+Math.max(1,Math.ceil(span/n)));
       const count=(rows:any[],field:string)=>rows.filter(r=>{const dt=new Date(r[field]);return dt>=start&&dt<end;}).length;
-      return {label:d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}),properties:count(p,'created_at'),reservations:count(reservations,'created_at'),visits:count(appointments,'created_at')};
+      return {label:d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}),properties:count(publishedProperties,'created_at'),reservations:count(reservations,'created_at'),visits:count(appointments,'created_at')};
     }));
     setBusy(false);
   },[supabase,period]);
