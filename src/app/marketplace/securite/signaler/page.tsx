@@ -31,7 +31,8 @@ export default function MarketplaceSafetyReportPage() {
     setSellerId(params.get('seller') || '');
     setOrderId(params.get('order') || '');
   }, []);
-  const [reason, setReason] = useState(orderId ? 'order_dispute' : 'suspected_scam');
+  const [reason, setReason] = useState('suspected_scam');
+  useEffect(() => { if (orderId) setReason('order_dispute'); }, [orderId]);
   const [details, setDetails] = useState('');
   const [evidence, setEvidence] = useState('');
   const [busy, setBusy] = useState(false);
