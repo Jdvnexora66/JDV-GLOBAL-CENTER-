@@ -66,7 +66,7 @@ export default function NewListingPage() {
   }, [user, router, supabase]);
 
   const selectedType = productTypes.find(t => t.id === form.type) || productTypes[0];
-  const update = (key: string, value: unknown) => setForm(prev => ({ ...prev, [key]: value }));
+  const update = (key: keyof typeof form, value: string | boolean | string[]) => setForm(prev => ({ ...prev, [key]: value } as typeof form));
   const addTag = () => {
     const value = tagInput.trim().toLowerCase();
     if (value && !form.tags.includes(value)) setForm(prev => ({ ...prev, tags: [...prev.tags, value] }));
