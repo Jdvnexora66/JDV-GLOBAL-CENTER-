@@ -198,7 +198,7 @@ export default function SellerDashboardPage() {
           <h1 className="text-2xl font-extrabold text-foreground mb-2">Ouvrez votre boutique</h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
             Rejoignez JDV MARKETPLACE et vendez vos produits à des milliers d'acheteurs dans le monde entier.
-            Paiements sécurisés via JDV PAY, gestion simplifiée.
+            Suivez vos produits et vos demandes de commande depuis votre espace vendeur. Les paiements sont désactivés pour le moment.
           </p>
         </div>
         <div className="grid grid-cols-3 gap-4 w-full">
@@ -528,12 +528,10 @@ export default function SellerDashboardPage() {
             <DollarSign size={48} className="text-muted-foreground/30" />
             <p className="text-muted-foreground font-medium">Règlements vendeur</p>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Vos règlements seront effectués via JDV PAY selon le calendrier de paiement défini.
+              Les règlements ne sont pas activés dans JDV Marketplace. Aucun paiement ni retrait ne peut être initié depuis cet espace. Cette rubrique affichera les informations de règlement lorsque le service sera officiellement disponible.
               Commission actuelle : <strong>{seller.commission_rate}%</strong>
             </p>
-            <Link href="/pay" className="btn-outline text-sm flex items-center gap-2">
-              <ArrowLeft size={14} /> Accéder à JDV PAY
-            </Link>
+            
           </div>
         )}
       </div>
