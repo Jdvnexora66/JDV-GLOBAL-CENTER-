@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShoppingCart, MapPin, CreditCard, Package, Truck, Plus, CheckCircle2, Loader2, AlertCircle, Trash2, Shield } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, MapPin, Package, Truck, Plus, CheckCircle2, Loader2, AlertCircle, Trash2, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 
@@ -38,12 +38,6 @@ interface Address {
   countries: { name: string } | null;
 }
 
-interface Wallet {
-  id: string;
-  available_balance: number;
-  currencies: { code: string; symbol: string } | null;
-}
-
 type CheckoutStep = 'cart' | 'address' | 'payment' | 'confirm';
 
 export default function CheckoutPage() {
@@ -54,7 +48,6 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<CheckoutStep>('cart');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [wallet, setWallet] = useState<Wallet | null>(null);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
@@ -67,17 +60,12 @@ export default function CheckoutPage() {
     if (!user) { router.replace('/inscription/marketplace'); return; }
     let active = true;
     void (async () => {
-      const [marketplaceResult, payResult] = await Promise.all([
-        supabase.from('app_memberships').select('id,status').eq('user_id', user.id).eq('app_key', 'marketplace').maybeSingle(),
-        supabase.from('app_memberships').select('id,status').eq('user_id', user.id).eq('app_key', 'pay').maybeSingle(),
-      ]);
+      const { data: marketplaceMembership, error: membershipError } = await supabase
+        .from('app_memberships').select('id,status')
+        .eq('user_id', user.id).eq('app_key', 'marketplace').maybeSingle();
       if (!active) return;
-      if (marketplaceResult.error || !marketplaceResult.data || marketplaceResult.data.status !== 'active') {
-        router.replace('/inscription/marketplace');
-        return;
-      }
-      if (payResult.error || !payResult.data || payResult.data.status !== 'active') {
-        router.replace('/inscription/pay?redirect=%2Fmarketplace%2Fcheckout');
+      if (membershipError || !marketplaceMembership || marketplaceMembership.status !== 'active') {
+        router.replace('/marketplace/connexion?mode=register');
         return;
       }
       loadCheckoutData();
@@ -89,7 +77,7 @@ export default function CheckoutPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const [cartRes, addrRes, walletRes] = await Promise.all([
+      const [cartRes, addrRes] = await Promise.all([
         supabase
           .from('marketplace_carts')
           .select(`id, marketplace_cart_items(id, quantity, unit_price, marketplace_listings(id, title, price, stock_quantity, seller_id, marketplace_listing_media(url, is_primary), marketplace_sellers(id, shop_name), currencies(code, symbol)))`)
@@ -100,17 +88,11 @@ export default function CheckoutPage() {
           .select('id, label, full_name, phone, address_line1, address_line2, city, state, postal_code, is_default, countries(name)')
           .eq('user_id', user.id)
           .order('is_default', { ascending: false }),
-        supabase
-          .from('wallets')
-          .select('id, available_balance, currencies(code, symbol)')
-          .eq('user_id', user.id)
-          .single(),
       ]);
 
      const items = (cartRes.data?.marketplace_cart_items ?? []) as unknown as CartItem[];
       setCartItems(items);
       setAddresses((addrRes.data as unknown as Address[]) || []);
-      if (walletRes.data) setWallet(walletRes.data as unknown as Wallet);
 
       const defaultAddr = (addrRes.data as unknown as Address[])?.find((a) => a.is_default);
       if (defaultAddr) setSelectedAddress(defaultAddr.id);
@@ -205,13 +187,11 @@ export default function CheckoutPage() {
       </div>
       <div className="text-center">
         <h1 className="text-2xl font-extrabold text-foreground mb-2">Commande passée !</h1>
-        <p className="text-muted-foreground text-sm">Votre commande a été enregistrée avec succès. Le vendeur va la préparer dès réception du paiement.</p>
+        <p className="text-muted-foreground text-sm">Votre demande de commande a été enregistrée. Aucun paiement n’a été effectué et le vendeur ne doit pas préparer la commande avant une future activation officielle des paiements.</p>
       </div>
-      <div className="bg-card border border-border rounded-2xl p-4 w-full max-w-sm">
-        <p className="text-sm text-muted-foreground text-center mb-3">Procédez au paiement via JDV PAY pour confirmer votre commande.</p>
-        <Link href="/pay" className="btn-primary w-full text-center flex items-center justify-center gap-2">
-          <CreditCard size={16} /> Payer via JDV PAY
-        </Link>
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 w-full max-w-sm text-center">
+        <p className="text-sm font-semibold text-amber-900">Paiement désactivé</p>
+        <p className="mt-1 text-xs leading-5 text-amber-800">JDV Marketplace est actuellement en mode sans paiement. Cette commande est une demande enregistrée, pas une transaction financière.</p>
       </div>
       <div className="flex gap-3">
         <Link href="/marketplace/orders" className="btn-outline text-sm">Mes commandes</Link>
@@ -235,7 +215,7 @@ export default function CheckoutPage() {
           {[
             { key: 'cart', label: 'Panier', icon: <ShoppingCart size={14} /> },
             { key: 'address', label: 'Adresse', icon: <MapPin size={14} /> },
-            { key: 'payment', label: 'Paiement', icon: <CreditCard size={14} /> },
+            { key: 'payment', label: 'Validation', icon: <CheckCircle2 size={14} /> },
           ].map((s, idx) => {
             const steps = ['cart', 'address', 'payment'];
             const currentIdx = steps.indexOf(step);
@@ -353,7 +333,7 @@ export default function CheckoutPage() {
               <div className="flex gap-3 mt-2">
                 <button onClick={() => setStep('cart')} className="btn-outline flex-1 text-sm">Retour</button>
                 <button onClick={() => setStep('payment')} disabled={!selectedAddress} className="btn-primary flex-1 text-sm">
-                  Continuer vers le paiement
+                  Continuer
                 </button>
               </div>
             </div>
@@ -361,45 +341,17 @@ export default function CheckoutPage() {
 
           {step === 'payment' && (
             <div className="flex flex-col gap-4">
-              <h2 className="font-bold text-foreground">Paiement via JDV PAY</h2>
+              <h2 className="font-bold text-foreground">Vérification de votre demande</h2>
 
-              {wallet ? (
-                <div className={`bg-card border rounded-2xl p-4 ${wallet.available_balance >= subtotal ? 'border-success/30' : 'border-warning/30'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                      <CreditCard size={18} className="text-accent" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-foreground text-sm">Portefeuille JDV PAY</p>
-                      <p className="text-xs text-muted-foreground">
-                        Solde disponible : <span className={`font-bold ${wallet.available_balance >= subtotal ? 'text-success' : 'text-danger'}`}>
-                          {wallet.currencies?.symbol || 'F'} {new Intl.NumberFormat('fr-FR').format(wallet.available_balance)}
-                        </span>
-                      </p>
-                    </div>
-                    {wallet.available_balance >= subtotal ? (
-                      <CheckCircle2 size={18} className="text-success flex-shrink-0" />
-                    ) : (
-                      <AlertCircle size={18} className="text-warning flex-shrink-0" />
-                    )}
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                <div className="flex items-center gap-3">
+                  <Shield size={20} className="shrink-0 text-amber-700" />
+                  <div>
+                    <p className="font-semibold text-amber-950">Mode sans paiement activé</p>
+                    <p className="mt-1 text-sm leading-5 text-amber-900">Vous pouvez enregistrer une demande de commande. Aucun portefeuille, carte, mobile money ou prestataire de paiement ne sera sollicité.</p>
                   </div>
-                  {wallet.available_balance < subtotal && (
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <p className="text-xs text-warning mb-2">Vous pourrez régler la commande via le parcours JDV PAY après sa création.</p>
-                      <Link href="/pay" className="btn-outline text-xs">Recharger mon portefeuille</Link>
-                    </div>
-                  )}
                 </div>
-              ) : (
-                <div className="bg-card border border-border rounded-2xl p-4">
-                  <p className="text-sm text-muted-foreground mb-3">Aucun portefeuille JDV PAY trouvé.</p>
-                  <Link href="/pay" className="btn-primary text-sm">Créer mon portefeuille</Link>
-                </div>
-              )}
-
-              <div className="bg-muted/20 rounded-xl p-3 flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield size={14} className="text-success flex-shrink-0" />
-                <span>Le paiement n’est pas lancé ici. La commande reste en attente jusqu’à confirmation réelle par JDV PAY.</span>
+                <p className="mt-4 text-sm text-amber-900">Le vendeur verra la demande en attente. La préparation et la confirmation commerciale restent suspendues jusqu’à l’activation officielle d’un processus de paiement.</p>
               </div>
 
               <div className="flex gap-3">
@@ -410,7 +362,7 @@ export default function CheckoutPage() {
                   className="btn-primary flex-1 text-sm flex items-center justify-center gap-2"
                 >
                   {placing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                  Créer la commande en attente
+                  Enregistrer la demande sans paiement
                 </button>
               </div>
             </div>
