@@ -17,7 +17,8 @@ const modules = [
   { href:'/pay/profile', title:'Profil & coordonnées', desc:'Coordonnées issues de votre profil JDV', icon:CircleUserRound, tone:'bg-orange-500/10 text-orange-600', enabled:true },
   { href:'/pay/kyc', title:'Vérification KYC', desc:'Suivre votre niveau de vérification', icon:ShieldCheck, tone:'bg-indigo-500/10 text-indigo-600', enabled:true },
   { href:'/pay/security', title:'Sécurité & 2FA', desc:'Consulter les protections du compte', icon:LockKeyhole, tone:'bg-rose-500/10 text-rose-600', enabled:true },
-  { href:'/pay/receipts', title:'Reçus PDF', desc:'Espace de consultation des justificatifs', icon:FileText, tone:'bg-amber-500/10 text-amber-600', enabled:false },
+  { href:'/pay/receipts', title:'Reçus PDF', desc:'Espace de consultation des justificatifs', icon:FileText, tone:'bg-amber-500/10 text-amber-600', enabled:true },
+  { href:'/pay/exchange', title:'Conversion', desc:'Taux, frais et confirmation avant conversion', icon:ArrowLeftRight, tone:'bg-teal-500/10 text-teal-600', enabled:false },
 ];
 
 export default function PayHome() {
