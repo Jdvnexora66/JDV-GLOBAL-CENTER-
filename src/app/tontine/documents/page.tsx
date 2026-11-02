@@ -132,6 +132,9 @@ export default function TontineDocumentsPage() {
     event.preventDefault();
     if (!user || !selected) return;
     if (!identityFile) { setError('Ajoute le scan du document d’identité.'); return; }
+    if (party.full_name.trim().length < 3 || party.phone.trim().replace(/[^0-9]/g, '').length < 7 || !/^[A-Z]{2}$/.test(party.country_code.trim().toUpperCase())) {
+      setError('Renseigne un nom complet, un téléphone vérifiable (au moins 7 chiffres) et un code pays ISO à deux lettres.'); return;
+    }
     if (!['application/pdf', 'image/jpeg', 'image/png', 'image/webp'].includes(identityFile.type) || identityFile.size > 15 * 1024 * 1024) {
       setError('Le justificatif doit être un PDF, JPG, PNG ou WEBP de 15 Mo maximum.'); return;
     }
