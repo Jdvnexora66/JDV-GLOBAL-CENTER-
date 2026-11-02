@@ -33,7 +33,7 @@ drop policy if exists marketplace_seller_kyc_submit_own on public.marketplace_se
 create policy marketplace_seller_kyc_submit_own on public.marketplace_seller_kyc_documents
   for insert to authenticated with check (
     user_id = (select auth.uid())
-    and document_status = 'submitted'
+    and (document_status = 'submitted' or (document_status = 'rejected' and rejection_reason in ('EXPIRY_DATE_MISSING','DOCUMENT_EXPIRED')))
     and quality_status = 'pending'
     and analyzed_at is null
     and rejection_reason is null
