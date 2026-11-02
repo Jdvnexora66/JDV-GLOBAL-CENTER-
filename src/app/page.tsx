@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import {
   Activity, ArrowRight, Bell, BookOpen, Building2, ChevronRight, CircleHelp,
@@ -11,7 +10,6 @@ import {
 import GlobalHeader from '@/components/navigation/GlobalHeader';
 import AppLogo from '@/components/ui/AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
-import { JDV_BRANCHES } from '@/lib/jdv/branch-catalog';
 import { getGroupedJDVModules } from '@/lib/jdv/application-registry';
 
 const quickLinks = [
@@ -26,6 +24,7 @@ export default function HomePage() {
   const [search, setSearch] = useState('');
   const groups = getGroupedJDVModules();
   const modules = groups.flatMap((group) => group.modules);
+  const portalBranches = groups.filter((group) => group.id !== 'other');
   const visibleGroups = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('fr');
     if (!query) return groups;
@@ -86,7 +85,7 @@ export default function HomePage() {
             </section>
 
             <section aria-label="Vue d'ensemble" className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted-foreground">Branches référencées</span><Compass size={19} className="text-blue-500"/></div><p className="mt-3 text-3xl font-black tabular-nums">{JDV_BRANCHES.length}</p><p className="mt-1 text-xs text-muted-foreground">Univers principaux du catalogue</p></div>
+              <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted-foreground">Branches référencées</span><Compass size={19} className="text-blue-500"/></div><p className="mt-3 text-3xl font-black tabular-nums">{portalBranches.length}</p><p className="mt-1 text-xs text-muted-foreground">Univers principaux du catalogue</p></div>
               <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted-foreground">Applications répertoriées</span><Grid2X2 size={19} className="text-violet-500"/></div><p className="mt-3 text-3xl font-black tabular-nums">{modules.length}</p><p className="mt-1 text-xs text-muted-foreground">Outils accessibles depuis le portail</p></div>
               <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted-foreground">Univers de services</span><Building2 size={19} className="text-emerald-500"/></div><p className="mt-3 text-3xl font-black tabular-nums">{groups.length}</p><p className="mt-1 text-xs text-muted-foreground">Catégories du catalogue applicatif</p></div>
               <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between"><span className="text-xs font-semibold text-muted-foreground">Votre espace</span><Users size={19} className="text-amber-500"/></div><p className="mt-3 text-xl font-black">{user ? 'Connecté' : 'Découverte'}</p><p className="mt-1 text-xs text-muted-foreground">{user ? 'Retrouvez vos espaces de travail' : 'Explorez librement le portail public'}</p></div>
@@ -102,7 +101,7 @@ export default function HomePage() {
             <section id="branches" className="mt-10 scroll-mt-24">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-accent">Le réseau JDV</p><h2 className="mt-1 text-xl font-extrabold sm:text-2xl">Explorez les branches</h2><p className="mt-1 text-sm text-muted-foreground">Chaque univers conserve ses fonctionnalités et ses parcours métier.</p></div><Link href="/branches" className="inline-flex items-center gap-2 text-sm font-bold text-accent">Voir le catalogue complet <ArrowRight size={15}/></Link></div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {JDV_BRANCHES.map((branch, index) => <Link key={branch.id} href={branch.href} className="group flex min-w-0 items-center gap-4 rounded-2xl border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg"><span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border bg-background p-2"><Image src={branch.logo} alt="" width={48} height={48} className="h-full w-full object-contain" unoptimized /></span><span className="min-w-0 flex-1"><span className="block text-[10px] font-extrabold uppercase tracking-[.14em]" style={{color:branch.accent}}>0{index+1} · {branch.eyebrow}</span><strong className="mt-1 block text-sm">{branch.name}</strong><span className="mt-1 block line-clamp-2 text-xs leading-5 text-muted-foreground">{branch.description}</span></span><ArrowRight size={16} className="shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-accent"/></Link>)}
+                {portalBranches.map((branch, index) => { const Icon = branch.modules[0]?.icon ?? Grid2X2; const destination = branch.modules[0]?.href ?? '/branches'; return <Link key={branch.id} href={destination} className="group flex min-w-0 items-center gap-4 rounded-2xl border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-lg"><span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-border bg-background" style={{color:branch.accent}}><Icon size={27}/></span><span className="min-w-0 flex-1"><span className="block text-[10px] font-extrabold uppercase tracking-[.14em]" style={{color:branch.accent}}>0{index+1} · {branch.modules.length} application{branch.modules.length>1?'s':''}</span><strong className="mt-1 block text-sm">{branch.title}</strong><span className="mt-1 block line-clamp-2 text-xs leading-5 text-muted-foreground">{branch.description}</span></span><ArrowRight size={16} className="shrink-0 text-muted-foreground transition group-hover:translate-x-1 group-hover:text-accent"/></Link>; })}
               </div>
             </section>
 
