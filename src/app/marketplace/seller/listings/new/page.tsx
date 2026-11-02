@@ -22,7 +22,7 @@ const productTypes = [
 const steps = ['Type de produit', 'Présentation', 'Prix et offre', 'Visuels', 'Contenu / livraison', 'Aperçu et publication'];
 
 export default function NewListingPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -44,6 +44,7 @@ export default function NewListingPage() {
   const [imageInput, setImageInput] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { router.replace('/marketplace/connexion'); return; }
     let active = true;
     (async () => {
@@ -63,7 +64,7 @@ export default function NewListingPage() {
       setLoading(false);
     })().catch(() => { if (active) { setError('Impossible de charger les données du formulaire.'); setLoading(false); } });
     return () => { active = false; };
-  }, [user, router, supabase]);
+  }, [authLoading, user, router, supabase]);
 
   const selectedType = productTypes.find(t => t.id === form.type) || productTypes[0];
   const update = (key: keyof typeof form, value: string | boolean | string[]) => setForm(prev => ({ ...prev, [key]: value } as typeof form));
