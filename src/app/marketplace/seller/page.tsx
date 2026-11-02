@@ -204,7 +204,7 @@ export default function SellerDashboardPage() {
         <div className="grid grid-cols-3 gap-4 w-full">
           {[
             { icon: <Package size={20} className="text-accent" />, label: 'Publiez vos produits' },
-            { icon: <DollarSign size={20} className="text-success" />, label: 'Recevez vos paiements' },
+            { icon: <DollarSign size={20} className="text-success" />, label: 'Suivez vos commandes' },
             { icon: <TrendingUp size={20} className="text-info" />, label: 'Développez vos ventes' },
           ].map((item, i) => (
             <div key={i} className="bg-card border border-border rounded-xl p-3 flex flex-col items-center gap-2">
@@ -267,7 +267,7 @@ export default function SellerDashboardPage() {
             {[
               { label: 'Produits publiés', value: `${stats.publishedListings}/${stats.totalListings}`, icon: <Package size={18} className="text-accent" />, sub: 'annonces actives' },
               { label: 'Commandes en cours', value: stats.pendingOrders, icon: <ShoppingCart size={18} className="text-warning" />, sub: 'à traiter' },
-              { label: 'Revenus récents', value: formatAmount(stats.totalRevenue), icon: <DollarSign size={18} className="text-success" />, sub: 'commandes payées' },
+              { label: 'Montant des commandes', value: formatAmount(stats.totalRevenue), icon: <DollarSign size={18} className="text-success" />, sub: 'suivi indicatif, non encaissé' },
               { label: 'Note boutique', value: seller.rating_average > 0 ? seller.rating_average.toFixed(1) : '—', icon: <Star size={18} className="text-yellow-400" />, sub: `${seller.rating_count} avis` },
             ].map((kpi, i) => (
               <div key={i} className="bg-card border border-border rounded-2xl p-4">
