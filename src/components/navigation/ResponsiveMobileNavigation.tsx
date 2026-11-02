@@ -70,7 +70,7 @@ export default function ResponsiveMobileNavigation() {
       ].slice(0, 5);
   const mobileItems = currentApp.id === 'travel' ? travelItems : [
     { href: currentApp.href, label: (currentBranch?.name || currentApp.name).replace(/^JDV( Global Center)?/i, '').trim() || 'Accueil', icon: Home },
-    { href: '/branches', label: 'Univers', icon: Compass },
+    { href: '/univers', label: 'Univers', icon: Compass },
     currentApp.id === 'marketplace'
       ? { href: '/help', label: 'Aide', icon: Compass }
       : { href: '/marketplace', label: 'Services', icon: Store },
