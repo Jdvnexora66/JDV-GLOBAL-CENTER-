@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
-const TABS = [['/pay', 'Vue d’ensemble'], ['/pay/send', 'Envoyer'], ['/pay/receive', 'Recevoir'], ['/pay/history', 'Historique'], ['/pay/beneficiaries', 'Contacts'], ['/pay/profile', 'Mon profil']] as const;
+const TABS = [['/pay', 'Accueil'], ['/pay/send', 'Envoyer'], ['/pay/receive', 'Recevoir'], ['/pay/history', 'Historique'], ['/pay/beneficiaries', 'Contacts'], ['/pay/profile', 'Profil'], ['/pay/kyc', 'KYC'], ['/pay/security', 'Sécurité']] as const;
 
 export default function PayHeader({ title, active, back = '/pay' }: { title: string; active: string; back?: string }) {
   return (
