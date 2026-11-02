@@ -22,9 +22,11 @@ interface Props {
   /** When set, login is valid only for users enrolled in this application. */
   appKey?: string;
   redirectTo?: string;
+  /** Explicitly enroll an existing authenticated account in this selected app. */
+  enrollOnLogin?: boolean;
 }
 
-export default function LoginForm({ onSwitchToRegister, appKey, redirectTo }: Props) {
+export default function LoginForm({ onSwitchToRegister, appKey, redirectTo, enrollOnLogin = false }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -59,7 +61,14 @@ export default function LoginForm({ onSwitchToRegister, appKey, redirectTo }: Pr
           setError('root', { message: 'La vérification des droits de cette application est indisponible. Réessayez plus tard ; aucun accès n’a été accordé.' });
           return;
         }
-        if (!membership || membership.status !== 'active') {
+        if ((!membership || membership.status !== 'active') && enrollOnLogin) {
+          const { error: joinError } = await supabase.rpc('jdv_join_application', { p_app_key: appKey });
+          if (joinError) {
+            await signOut();
+            setError('root', { message: 'Votre espace Marketplace ne peut pas encore être activé. Le service d’adhésion doit être installé et disponible. Réessayez ultérieurement.' });
+            return;
+          }
+        } else if (!membership || membership.status !== 'active') {
           toast.info('Votre compte JDV existe déjà. Activez maintenant votre espace pour cette application.');
           router.replace(`/inscription/${appKey}${redirectTo ? `?redirect=${encodeURIComponent(redirectTo)}` : ''}`);
           return;
