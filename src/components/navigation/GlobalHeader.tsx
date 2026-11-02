@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowRight, Menu, X, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { ArrowRight, Bell, Menu, X, ShieldCheck, SlidersHorizontal, Home, Compass, ShoppingBag, CircleHelp } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
 const publicLinks = [
   { href: '/about', label: 'Présentation' },
-  { href: '/branches', label: 'Nos neuf branches' },
+  { href: '/univers', label: 'Les neuf univers' },
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/help', label: 'Centre d’aide' },
 ];
@@ -29,6 +29,7 @@ export default function GlobalHeader() {
           {publicLinks.map((item) => <Link key={item.href} href={item.href} className="text-sm font-semibold text-muted-foreground transition hover:text-foreground">{item.label}</Link>)}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
+          {user && <Link href="/notifications" aria-label="Notifications" className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-bold hover:border-accent/50"><Bell size={15}/> Notifications</Link>}
           {user && isSuperAdmin && <>
             <Link href="/super-admin" className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-bold hover:border-accent/50"><ShieldCheck size={15}/> Administration</Link>
             <Link href="/hidden-concepteur-gate/dashboard/studio" className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2 text-xs font-bold hover:border-accent/50"><SlidersHorizontal size={15}/> Studio</Link>
@@ -40,10 +41,24 @@ export default function GlobalHeader() {
       {mobileOpen && <nav aria-label="Navigation mobile" className="border-t border-border bg-background px-4 py-4 lg:hidden">
         <div className="mx-auto flex max-w-7xl flex-col gap-1">
           {publicLinks.map((item) => <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted">{item.label}</Link>)}
+          {user && <Link href="/notifications" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted">Notifications</Link>}
           {user && isSuperAdmin && <><Link href="/super-admin" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted">Administration</Link><Link href="/hidden-concepteur-gate/dashboard/studio" onClick={() => setMobileOpen(false)} className="rounded-xl px-3 py-3 text-sm font-semibold hover:bg-muted">Studio Concepteur</Link></>}
           {!loading && <Link href={user ? workspaceHref : '/auth/login'} onClick={() => setMobileOpen(false)} className="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-extrabold text-black">{user ? 'Mon espace' : 'Connexion'}<ArrowRight size={15}/></Link>}
         </div>
       </nav>}
+      <nav aria-label="Navigation rapide mobile" className="fixed inset-x-0 bottom-0 z-[60] grid grid-cols-4 border-t border-border bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,.10)] backdrop-blur-xl lg:hidden">
+        {[
+          { href: '/', label: 'Accueil', Icon: Home },
+          { href: '/univers', label: 'Univers', Icon: Compass },
+          { href: '/marketplace', label: 'Boutique', Icon: ShoppingBag },
+          { href: '/help', label: 'Aide', Icon: CircleHelp },
+        ].map(({ href, label, Icon }) => (
+          <Link key={href} href={href} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-bold text-muted-foreground transition hover:bg-muted hover:text-foreground">
+            <Icon size={19} strokeWidth={2.1}/>
+            <span>{label}</span>
+          </Link>
+        ))}
+      </nav>
     </header>
   );
 }
