@@ -89,6 +89,11 @@ create policy marketplace_safety_reports_read_own
       select 1 from public.marketplace_sellers s
       where s.id = seller_id and s.user_id = (select auth.uid())
     )
+    or exists (
+      select 1 from public.marketplace_orders o
+      join public.marketplace_sellers s on s.id = o.seller_id
+      where o.id = order_id and s.user_id = (select auth.uid())
+    )
   );
 
 -- No client UPDATE/DELETE policy: moderation status and resolution are server/admin controlled.
