@@ -70,33 +70,22 @@ export const JDV_MODULE_GROUPS: JDVModuleGroup[] = [
   { id: 'immo', title: 'JDV Immo', description: 'Immobilier, biens, recherches et projets de construction.', accent: '#FBBF24', moduleIds: ['immo'] },
   { id: 'sante', title: 'JDV Santé', description: 'Médecins, pharmacies, laboratoires et services de santé.', accent: '#22C55E', moduleIds: ['health'] },
   { id: 'academy', title: 'JDV Academy', description: 'Formation, apprentissage et parcours pédagogiques.', accent: '#818CF8', moduleIds: ['academy'] },
-  { id: 'social', title: 'JDV Social', description: 'Réseau social, communautés et événements.', accent: '#A78BFA', moduleIds: ['social', 'community', 'events'] },
+  { id: 'social', title: 'JDV Social', description: 'Réseau social, communautés et événements.', accent: '#A78BFA', moduleIds: ['social', 'community', 'events', 'pub', 'media', 'entertainment'] },
   { id: 'travel', title: 'JDV Travel', description: 'Voyages, transport, transit et mobilité.', accent: '#60A5FA', moduleIds: ['travel', 'transport', 'transit'] },
   { id: 'marketplace', title: 'JDV Marketplace', description: 'Boutique, produits et vente en ligne.', accent: '#F59E0B', moduleIds: ['marketplace'] },
-  { id: 'services', title: 'JDV Services', description: 'Prestations, entreprises, clientèle et outils professionnels.', accent: '#34D399', moduleIds: ['services', 'business', 'crm', 'jobs', 'legal', 'admin', 'procurement', 'inventory', 'hr', 'ai'] },
+  { id: 'services', title: 'JDV Services', description: 'Prestations, entreprises, clientèle et outils professionnels.', accent: '#34D399', moduleIds: ['services', 'business', 'crm', 'jobs', 'legal', 'admin', 'procurement', 'inventory', 'hr', 'ai', 'agriculture', 'energy'] },
   { id: 'tontine', title: 'JDV Tontine', description: 'Épargne collective, groupes et cotisations.', accent: '#14B8A6', moduleIds: ['tontine'] },
   { id: 'finance', title: 'JDV Finance', description: 'Paiements, assurance et comptabilité.', accent: '#2DD4BF', moduleIds: ['pay', 'insurance', 'accounting'] },
 ];
 
-export const getGroupedJDVModules = () => {
-  const assigned = new Set(JDV_MODULE_GROUPS.flatMap((group) => group.moduleIds));
-  return [
-    ...JDV_MODULE_GROUPS.map((group) => ({
-      ...group,
-      modules: group.moduleIds
-        .map((id) => JDV_MODULES.find((module) => module.id === id))
-        .filter((module): module is JDVModule => Boolean(module)),
-    })),
-    {
-      id: 'other',
-      title: 'Autres applications',
-      description: 'Applications en attente de classement explicite.',
-      accent: '#94A3B8',
-      moduleIds: JDV_MODULES.filter((module) => !assigned.has(module.id)).map((module) => module.id),
-      modules: JDV_MODULES.filter((module) => !assigned.has(module.id)),
-    },
-  ].filter((group) => group.modules.length > 0);
-};
+export const getGroupedJDVModules = () =>
+  JDV_MODULE_GROUPS.map((group) => ({
+    ...group,
+    modules: group.moduleIds
+      .map((id) => JDV_MODULES.find((module) => module.id === id))
+      .filter((module): module is JDVModule => Boolean(module)),
+  }));
+
 
 
 export const getJDVModuleById = (id: string) => JDV_MODULES.find((module) => module.id === id);
