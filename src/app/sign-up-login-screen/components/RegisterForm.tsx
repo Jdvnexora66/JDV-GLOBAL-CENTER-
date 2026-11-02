@@ -15,6 +15,7 @@ interface RegisterFormData {
   password: string;
   confirm_password: string;
   country: string;
+  phone: string;
   language: string;
   terms: boolean;
 }
@@ -59,7 +60,7 @@ export default function RegisterForm({ onSwitchToLogin, appKey = 'global_center'
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterFormData>({ defaultValues: { language: 'fr', country: 'bj' } });
+  } = useForm<RegisterFormData>({ defaultValues: { language: 'fr', country: 'bj', phone: '' } });
 
   const password = watch('password');
 
@@ -69,7 +70,8 @@ export default function RegisterForm({ onSwitchToLogin, appKey = 'global_center'
       const result = await signUp(data.email, data.password, {
         first_name: data.first_name.trim(),
         last_name: data.last_name.trim(),
-        country_code: data.country,
+        country_code: countries.find((country) => country.id === data.country)?.code ?? data.country.toUpperCase(),
+        phone: `${countries.find((country) => country.id === data.country)?.phone ?? ''}${data.phone.trim()}`,
         preferred_language: data.language,
         jdv_app_key: appKey,
       });
@@ -199,6 +201,27 @@ export default function RegisterForm({ onSwitchToLogin, appKey = 'global_center'
           {errors.country && (
             <p className="text-xs text-danger font-medium">{errors.country.message}</p>
           )}
+        </div>
+
+        {/* Phone */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="reg-phone" className="text-sm font-semibold text-foreground">
+            Numéro de téléphone <span className="text-danger">*</span>
+          </label>
+          <div className="flex gap-2">
+            <span className="inline-flex min-w-[5.5rem] items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-semibold text-foreground">
+              {countries.find((c) => c.id === watch('country'))?.phone ?? '+229'}
+            </span>
+            <input
+              id="reg-phone"
+              type="tel"
+              autoComplete="tel-national"
+              placeholder="01 00 00 00 00"
+              className="jdv-input min-w-0 flex-1"
+              {...register('phone', { required: 'Numéro de téléphone requis', minLength: { value: 6, message: 'Numéro trop court' }, pattern: { value: /^[0-9() .-]{6,20}$/, message: 'Format de téléphone invalide' } })}
+            />
+          </div>
+          {errors.phone && <p className="text-xs text-danger font-medium">{errors.phone.message}</p>}
         </div>
 
         {/* Language */}
