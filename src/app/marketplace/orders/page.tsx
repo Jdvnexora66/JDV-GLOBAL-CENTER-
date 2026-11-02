@@ -126,7 +126,8 @@ export default function BuyerOrdersPage() {
       <header className="sticky top-0 z-40 bg-card border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           <Link href="/marketplace" className="btn-ghost p-2 -ml-2"><ArrowLeft size={18} /></Link>
-          <h1 className="font-bold text-foreground">Mes commandes</h1>
+          <h1 className="font-bold text-foreground flex-1">Mes commandes</h1>
+          <Link href="/marketplace/downloads" className="btn-outline inline-flex items-center gap-2 px-3 py-2 text-xs"><Package size={14}/> Mes téléchargements</Link>
         </div>
       </header>
 
