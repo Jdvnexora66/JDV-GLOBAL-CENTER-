@@ -94,3 +94,40 @@ create policy marketplace_safety_reports_read_own
 -- No client UPDATE/DELETE policy: moderation status and resolution are server/admin controlled.
 comment on table public.marketplace_safety_reports is
   'Private buyer/seller safety reports and order disputes. Client users can submit and read relevant reports only; moderation is server controlled.';
+
+-- Repair v1 KYC insert policy: allow the server trigger to persist an expired
+-- identity as rejected, while preventing clients from inventing rejection reasons.
+drop policy if exists marketplace_seller_kyc_submit_own
+  on public.marketplace_seller_kyc_documents;
+create policy marketplace_seller_kyc_submit_own
+  on public.marketplace_seller_kyc_documents
+  for insert to authenticated
+  with check (
+    user_id = (select auth.uid())
+    and quality_status = 'pending'
+    and analyzed_at is null
+    and exists (
+      select 1 from public.marketplace_sellers s
+      where s.id = seller_id and s.user_id = (select auth.uid())
+    )
+    and (
+      (
+        document_status = 'submitted'
+        and rejection_reason is null
+        and (
+          document_type = 'business_registration'
+          or (document_type in ('national_id','passport','drivers_license','residence_permit')
+              and expires_at >= current_date)
+        )
+      )
+      or
+      (
+        document_status = 'rejected'
+        and document_type in ('national_id','passport','drivers_license','residence_permit')
+        and (
+          (expires_at is null and rejection_reason = 'EXPIRY_DATE_MISSING')
+          or (expires_at < current_date and rejection_reason = 'DOCUMENT_EXPIRED')
+        )
+      )
+    )
+  );
